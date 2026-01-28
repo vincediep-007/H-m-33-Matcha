@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --foreground-rgb: 92, 64, 51; /* Earth 800 */
+    --background-start-rgb: 253, 251, 247; /* Cream 50 */
+    --background-end-rgb: 247, 243, 234; /* Cream 100 */
+  }
+
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(
+        to bottom,
+        rgb(var(--background-start-rgb)),
+        rgb(var(--background-end-rgb))
+      )
+      fixed;
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-matcha-500;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-matcha-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-matcha-600 transition shadow-lg hover:shadow-xl active:scale-95;
+  }
+  
+  .card {
+    @apply bg-white/80 backdrop-blur-sm border border-cream-200 rounded-2xl shadow-sm hover:shadow-md transition p-4;
+  }
+}
