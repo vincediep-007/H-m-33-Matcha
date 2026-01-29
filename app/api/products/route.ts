@@ -33,7 +33,12 @@ export async function GET() {
             category_id: Number(p.category_id),
             is_available: Number(p.is_available),
             is_visible: Number(p.is_visible),
-            sizes: sizes.filter((s: any) => String(s.product_id) === String(p.id)).map((s: any) => ({
+            sizes: sizes.filter((s: any) => {
+                const match = String(s.product_id).trim() === String(p.id).trim();
+                // console.log(`DEBUG SIZE MATCH: ProdID=${p.id} SizeProdID=${s.product_id} Match=${match}`) 
+                return match;
+            }).map((s: any) => ({
+
                 id: Number(s.id),
                 product_id: Number(s.product_id),
                 size_name: s.size_name,
