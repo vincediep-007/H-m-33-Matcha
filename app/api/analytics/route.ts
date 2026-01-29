@@ -9,14 +9,22 @@ export async function GET(request: NextRequest) {
 
   try {
     // 1. Build Date Filter
-    let dateFilter = "created_at >= datetime('now', '-7 days')"
-    if (timeframe === 'month') dateFilter = "created_at >= datetime('now', '-30 days')"
-    if (timeframe === 'quarter') dateFilter = "created_at >= datetime('now', '-90 days')"
-    if (timeframe === 'year') dateFilter = "created_at >= datetime('now', '-365 days')"
+    let dateFilter = "created_at >= ?"
+    let params: any[] = []
+
+    const now = new Date()
+    let days = 7
+    if (timeframe === 'month') days = 30
+    if (timeframe === 'quarter') days = 90
+    if (timeframe === 'year') days = 365
+
+    const filterDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
+    params.push(filterDate.toISOString().replace('T', ' ').replace('Z', ''))
 
     // Custom Date Range Override
     if (dateFrom && dateTo) {
-      dateFilter = `created_at >= '${dateFrom} 00:00:00' AND created_at <= '${dateTo} 23:59:59'`
+      dateFilter = `created_at >= ? AND created_at <= ?`
+      params = [`${dateFrom} 00:00:00`, `${dateTo} 23:59:59`]
     }
 
     // 2. Fetch Metadata for Grouping (Categories, Option Groups) AND Costing (Ingredients, Recipes)
@@ -54,7 +62,7 @@ export async function GET(request: NextRequest) {
     })
 
     // 3. Fetch Orders
-    const orders = await db.query(`SELECT items, total FROM orders WHERE status = 'completed' AND ${dateFilter}`)
+    const orders = await db.query(`SELECT items, total FROM orders WHERE status = 'completed' AND ${dateFilter}`, params)
 
     // 4. Aggregate Data
     let totalRevenue = 0

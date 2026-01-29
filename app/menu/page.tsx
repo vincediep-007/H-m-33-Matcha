@@ -176,7 +176,7 @@ export default function Menu() {
       <div className="container mx-auto p-4">
         {activeCatDesc && (
           <div className="mb-6 p-4 bg-matcha-50 rounded-xl border-l-4 border-matcha-500 text-matcha-800 italic animate-fade-in shadow-sm">
-            "{activeCatDesc}"
+            &ldquo;{activeCatDesc}&rdquo;
           </div>
         )}
 

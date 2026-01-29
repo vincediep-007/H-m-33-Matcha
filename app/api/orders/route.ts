@@ -16,13 +16,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(order)
     } else {
       let query = 'SELECT * FROM orders '
-      const params = []
+      const params: any[] = []
 
       if (since === 'today') {
         // Vietnam is UTC+7. We want orders from 00:00 VN time today.
-        // In UTC, this is 17:00 previous day (if today is 28th, 00:00 VN = 17:00 27th UTC)
-        // SQL: created_at >= datetime('now', '+7 hours', 'start of day', '-7 hours')
-        query += "WHERE created_at >= datetime('now', '+7 hours', 'start of day', '-7 hours') "
+        const now = new Date()
+        // Adjust to Vietnam (UTC+7)
+        const vnTime = new Date(now.getTime() + (7 * 60 * 60 * 1000))
+        vnTime.setUTCHours(0, 0, 0, 0)
+        // Convert back to UTC for the database (which usually stores in UTC)
+        const startOfVnDayInUtc = new Date(vnTime.getTime() - (7 * 60 * 60 * 1000))
+
+        query += "WHERE created_at >= ? "
+        params.push(startOfVnDayInUtc.toISOString().replace('T', ' ').replace('Z', ''))
       }
 
       query += 'ORDER BY created_at DESC LIMIT 100' // Limit 50 -> 100

@@ -14,7 +14,7 @@ export async function GET() {
             ...p,
             sizes: sizes.filter((s: any) => s.product_id === p.id),
             option_group_ids: links.filter((l: any) => l.product_id === p.id).map((l: any) => l.group_id),
-            recipe: recipes.filter((r: any) => r.product_id === p.id).map((r: any) => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
+            recipe: recipes.filter((r: any) => r.product_id === p.id).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
         }))
 
         return NextResponse.json(data)

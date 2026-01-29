@@ -27,103 +27,108 @@ db.serialize(() => {
     // We'll generate generic CREATE TABLE statements compatible with Postgres
 
     stream.write(`
--- PostgreSQL Seed File
--- Generated from SQLite
+--PostgreSQL Seed File
+--Generated from SQLite
 
-DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS surveys;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS product_recipes;
 DROP TABLE IF EXISTS product_option_links;
 DROP TABLE IF EXISTS product_sizes;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS ingredients;
-DROP TABLE IF EXISTS option_groups;
 DROP TABLE IF EXISTS options;
+DROP TABLE IF EXISTS option_groups;
 DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS settings;
 
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    display_order INTEGER DEFAULT 0
-);
+CREATE TABLE IF NOT EXISTS settings(
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
 
-CREATE TABLE options (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  price INTEGER DEFAULT 0,
-  image_url TEXT,
-  is_available INTEGER DEFAULT 1,
-  sort_order INTEGER DEFAULT 0,
-  image_focus TEXT,
-  crop_data TEXT
-);
+CREATE TABLE categories(
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        is_visible BOOLEAN DEFAULT true,
+        sort_order INTEGER DEFAULT 0
+    );
 
-CREATE TABLE option_groups (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  is_required INTEGER DEFAULT 0,
-  max_select INTEGER DEFAULT 1
-);
+CREATE TABLE option_groups(
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        is_multi_select BOOLEAN DEFAULT false,
+        is_required BOOLEAN DEFAULT false,
+        is_visible BOOLEAN DEFAULT true
+    );
 
-CREATE TABLE ingredients (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    cost_per_gram REAL DEFAULT 0
-);
+CREATE TABLE options(
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES option_groups(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        description TEXT,
+        price_modifier INTEGER DEFAULT 0,
+        is_available BOOLEAN DEFAULT true,
+        is_visible BOOLEAN DEFAULT true
+    );
 
-CREATE TABLE products (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  category_id INTEGER REFERENCES categories(id),
-  description TEXT,
-  image_url TEXT,
-  is_available INTEGER DEFAULT 1,
-  is_visible INTEGER DEFAULT 1
-);
+CREATE TABLE products(
+        id SERIAL PRIMARY KEY,
+        category_id INTEGER REFERENCES categories(id),
+        name TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        is_available BOOLEAN DEFAULT true,
+        is_visible BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-CREATE TABLE product_sizes (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    size_name TEXT NOT NULL,
-    price INTEGER NOT NULL
-);
+CREATE TABLE product_sizes(
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+        size_name TEXT NOT NULL,
+        price INTEGER NOT NULL
+    );
 
-CREATE TABLE product_option_links (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    group_id INTEGER REFERENCES option_groups(id)
-);
+CREATE TABLE product_option_links(
+        product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+        group_id INTEGER REFERENCES option_groups(id) ON DELETE CASCADE,
+        PRIMARY KEY(product_id, group_id)
+    );
 
-CREATE TABLE product_recipes (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    ingredient_id INTEGER REFERENCES ingredients(id),
+CREATE TABLE product_recipes(
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER REFERENCES products(id),
+        ingredient_id INTEGER, --Weak link if ingredients table not present
     quantity REAL NOT NULL,
-    size_name TEXT
+        size_name TEXT
 );
 
-CREATE TABLE orders (
-  id SERIAL PRIMARY KEY,
-  customer_name TEXT,
-  total_amount INTEGER,
-  status TEXT DEFAULT 'pending',
-  items_json TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  order_number INTEGER
-);
+CREATE TABLE orders(
+            id SERIAL PRIMARY KEY,
+            items TEXT,
+            total INTEGER,
+            details TEXT,
+            worker_id INTEGER,
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
 
-CREATE TABLE order_items (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER REFERENCES orders(id),
-    product_name TEXT,
-    size_name TEXT,
-    quantity INTEGER,
-    price INTEGER,
-    options_json TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+CREATE TABLE surveys(
+            id SERIAL PRIMARY KEY,
+            order_id INTEGER,
+            worker_id INTEGER,
+            quality INTEGER,
+            time INTEGER,
+            manner INTEGER,
+            overall INTEGER,
+            comment TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
 `);
+
 
     // 2. Export Data
     let completed = 0;

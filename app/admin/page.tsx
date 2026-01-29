@@ -45,10 +45,14 @@ export default function Admin() {
 
   const [showProdModal, setShowProdModal] = useState(false)
   const [prodForm, setProdForm] = useState({
-    name: '', categoryId: 0, description: '', imageUrl: '',
-    sizes: [{ size_name: 'M', price: 0 }] as ProductSize[],
+    id: 0,
+    name: '',
+    categoryId: 0,
+    description: '',
+    imageUrl: '',
+    sizes: [] as any[],
     optionGroupIds: [] as number[],
-    recipe: [] as { ingredientId: number, quantity: number }[]
+    recipe: [] as { ingredientId: number, quantity: number, sizeName?: string }[]
   })
 
   // Ingredient Modal & Calculator
@@ -162,6 +166,13 @@ export default function Admin() {
   }
 
   useEffect(() => {
+    if (isAuthenticated) {
+      refreshAllSafe()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
+
+  useEffect(() => {
     if (activeTab === 'analysis') fetchAnalytics()
   }, [activeTab, timeframe])
 
@@ -259,20 +270,23 @@ export default function Admin() {
   }
 
   // 4. Products
-  const openNewProd = () => {
-    if (categories.length === 0) return alert('No category');
+  const openNewProduct = () => {
     setEditingId(null)
-    setProdForm({ name: '', categoryId: categories[0]?.id || 0, description: '', imageUrl: '', sizes: [{ size_name: 'M', price: 0 }], optionGroupIds: [], recipe: [] });
+    setProdForm({
+      id: 0,
+      name: '', categoryId: 0, description: '', imageUrl: '',
+      sizes: [{ size_name: 'M', price: 0 }] as any[],
+      optionGroupIds: [] as number[],
+      recipe: []
+    })
     setShowProdModal(true)
   }
-  const openEditProd = (p: Product) => {
+  const openEditProduct = (p: Product) => {
     setEditingId(p.id)
     setProdForm({
-      name: p.name,
-      categoryId: p.category_id,
-      description: p.description,
-      imageUrl: p.image_url,
-      sizes: p.sizes.map(s => ({ size_name: s.size_name, price: Number(s.price) })),
+      id: p.id,
+      name: p.name, categoryId: p.category_id, description: p.description, imageUrl: p.image_url || '',
+      sizes: p.sizes || [],
       optionGroupIds: p.option_group_ids || [],
       recipe: p.recipe || []
     })
@@ -280,8 +294,12 @@ export default function Admin() {
   }
   const saveProduct = async () => {
     const method = editingId ? 'PUT' : 'POST'
-    const body = editingId ? { id: editingId, ...prodForm, sizes: prodForm.sizes.map(s => ({ name: s.size_name, price: Number(s.price) })) } : { ...prodForm, sizes: prodForm.sizes.map(s => ({ name: s.size_name, price: Number(s.price) })) }
-    await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const bodyClone = { ...prodForm } as any
+    if (editingId) bodyClone.id = editingId
+    // Remap sizes for API if needed, or ensure API handles size_name
+    bodyClone.sizes = prodForm.sizes.map(s => ({ name: s.size_name, price: Number(s.price) }))
+
+    await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(bodyClone) })
     setShowProdModal(false); refreshAllSafe()
   }
 
@@ -424,7 +442,7 @@ export default function Admin() {
 
       {activeTab === 'products' && (
         <div>
-          <button onClick={openNewProd} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Add Product</button>
+          <button onClick={openNewProduct} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Add Product</button>
 
           {/* Grouped Products */}
           {categories.map(cat => {
@@ -453,7 +471,7 @@ export default function Admin() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <button onClick={() => openEditProd(p)} className="text-blue-500 text-xl" title="Edit">✏️</button>
+                        <button onClick={() => openEditProduct(p)} className="text-blue-500 text-xl" title="Edit">✏️</button>
                         <button onClick={() => toggleProductVisible(p)} title="Visibility" className="text-xl">{p.is_visible ? '👁️' : '🙈'}</button>
                         <button onClick={() => toggleProductStock(p)} title="Stock Status" className="text-xl">{p.is_available ? '📦' : '🚫'}</button>
                         <button onClick={() => deleteProduct(p.id)} className="text-red-500 text-xl">🗑️</button>
@@ -473,7 +491,7 @@ export default function Admin() {
                   <div key={p.id} className="border p-4 rounded flex justify-between bg-gray-50">
                     <span>{p.name}</span>
                     <div className="flex gap-4">
-                      <button onClick={() => openEditProd(p)} className="text-blue-500 text-xl" title="Edit">✏️</button>
+                      <button onClick={() => openEditProduct(p)} className="text-blue-500 text-xl" title="Edit">✏️</button>
                       <button onClick={() => deleteProduct(p.id)} className="text-red-500 text-xl">🗑️</button>
                     </div>
                   </div>
