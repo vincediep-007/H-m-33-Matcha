@@ -19,15 +19,15 @@ export async function GET(request: NextRequest) {
     // Vietnam Time (UTC+7)
     const vnNow = new Date(now.getTime() + (7 * 60 * 60 * 1000))
 
+    // Default to a range ending at the end of the current VN day
+    const endOfVnNow = new Date(vnNow)
+    endOfVnNow.setUTCHours(23, 59, 59, 999)
+    const endUtc = new Date(endOfVnNow.getTime() - (7 * 60 * 60 * 1000))
+
     if (timeframe === 'today') {
       const startOfVnDay = new Date(vnNow)
       startOfVnDay.setUTCHours(0, 0, 0, 0)
-      const endOfVnDay = new Date(vnNow)
-      endOfVnDay.setUTCHours(23, 59, 59, 999)
-
-      // Convert back to UTC for DB query
       const startUtc = new Date(startOfVnDay.getTime() - (7 * 60 * 60 * 1000))
-      const endUtc = new Date(endOfVnDay.getTime() - (7 * 60 * 60 * 1000))
 
       dateFilter = "created_at >= ? AND created_at <= ?"
       params = [
@@ -40,14 +40,13 @@ export async function GET(request: NextRequest) {
       const endOfYesterday = new Date(vnNow.getTime() - (24 * 60 * 60 * 1000))
       endOfYesterday.setUTCHours(23, 59, 59, 999)
 
-      // Convert back to UTC
       const startUtc = new Date(startOfYesterday.getTime() - (7 * 60 * 60 * 1000))
-      const endUtc = new Date(endOfYesterday.getTime() - (7 * 60 * 60 * 1000))
+      const yesterdayEndUtc = new Date(endOfYesterday.getTime() - (7 * 60 * 60 * 1000))
 
       dateFilter = "created_at >= ? AND created_at <= ?"
       params = [
         startUtc.toISOString().replace('T', ' ').replace('Z', ''),
-        endUtc.toISOString().replace('T', ' ').replace('Z', '')
+        yesterdayEndUtc.toISOString().replace('T', ' ').replace('Z', '')
       ]
     } else if (dateFrom && dateTo) {
       dateFilter = `created_at >= ? AND created_at <= ?`
@@ -58,8 +57,18 @@ export async function GET(request: NextRequest) {
       if (timeframe === 'quarter') days = 90
       if (timeframe === 'year') days = 365
 
-      const filterDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
-      params.push(filterDate.toISOString().replace('T', ' ').replace('Z', ''))
+      // For 'Past X days', we align with the start of the day X days ago in VN time
+      const startOfVnRange = new Date(vnNow)
+      startOfVnRange.setUTCHours(0, 0, 0, 0)
+      startOfVnRange.setDate(startOfVnRange.getDate() - (days - 1)) // e.g. 'week' means 7 days including today
+
+      const startUtc = new Date(startOfVnRange.getTime() - (7 * 60 * 60 * 1000))
+
+      dateFilter = "created_at >= ? AND created_at <= ?"
+      params = [
+        startUtc.toISOString().replace('T', ' ').replace('Z', ''),
+        endUtc.toISOString().replace('T', ' ').replace('Z', '')
+      ]
     }
 
     // 2. Fetch Metadata for Grouping (Categories, Option Groups) AND Costing (Ingredients, Recipes)

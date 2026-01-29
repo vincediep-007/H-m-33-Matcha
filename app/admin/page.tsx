@@ -643,8 +643,8 @@ export default function Admin() {
                 <div>
                   <label className="block text-xs font-bold text-gray-400 mb-1">PERIOD</label>
                   <select className="border p-2 rounded w-40" value={timeframe} onChange={e => setTimeframe(e.target.value)}>
-                    <option value="today">Today (VN)</option>
-                    <option value="yesterday">Yesterday (VN)</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
                     <option value="week">Past 7 Days</option>
                     <option value="month">Past 30 Days</option>
                     <option value="quarter">Past Quarter</option>
