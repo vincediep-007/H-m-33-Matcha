@@ -108,6 +108,15 @@ export class PostgresAdapter implements DatabaseAdapter {
         )`;
 
 
+    // Product Recipes
+    await sql`CREATE TABLE IF NOT EXISTS product_recipes (
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+            ingredient_id INTEGER,
+            quantity REAL NOT NULL,
+            size_name TEXT
+        )`;
+
     // Surveys
     await sql`CREATE TABLE IF NOT EXISTS surveys (
             id SERIAL PRIMARY KEY,
@@ -122,30 +131,42 @@ export class PostgresAdapter implements DatabaseAdapter {
         )`;
   }
 
+
   async query<T = any>(text: string, params: any[] = []): Promise<T[]> {
-    const { text: newText, values } = this.convertQuery(text, params);
-    const result = await sql.query(newText, values);
-    return result.rows as T[];
+    try {
+      const { text: newText, values } = this.convertQuery(text, params);
+      const result = await sql.query(newText, values);
+      return result.rows as T[];
+    } catch (err: any) {
+      console.error(`Postgres Query Error: ${text}`, err);
+      throw err;
+    }
   }
 
   async run(text: string, params: any[] = []): Promise<{ id?: number | string }> {
-    const { text: newText, values } = this.convertQuery(text, params);
+    try {
+      const { text: newText, values } = this.convertQuery(text, params);
 
-    let finalText = newText;
-    let isInsert = /^\s*INSERT/i.test(newText);
+      let finalText = newText;
+      let isInsert = /^\s*INSERT/i.test(newText);
 
-    if (isInsert && !/RETURNING/i.test(newText)) {
-      finalText += ' RETURNING id';
+      if (isInsert && !/RETURNING/i.test(newText)) {
+        finalText += ' RETURNING id';
+      }
+
+      const result = await sql.query(finalText, values);
+
+      if (isInsert && result.rows.length > 0) {
+        return { id: result.rows[0].id };
+      }
+
+      return {};
+    } catch (err: any) {
+      console.error(`Postgres Run Error: ${text}`, err);
+      throw err;
     }
-
-    const result = await sql.query(finalText, values);
-
-    if (isInsert && result.rows.length > 0) {
-      return { id: result.rows[0].id };
-    }
-
-    return {};
   }
+
 
   private convertQuery(text: string, params: any[]) {
     // Simple regex to replace ? with $1, $2, etc.
