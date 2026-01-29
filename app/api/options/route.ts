@@ -18,10 +18,21 @@ export async function GET() {
         // Nest options inside groups
         const data = groups.map((g: any) => ({
             ...g,
-            options: options.filter((o: any) => o.group_id == g.id)
+            id: Number(g.id),
+            is_visible: Number(g.is_visible),
+            options: options.filter((o: any) => String(o.group_id) === String(g.id)).map((o: any) => ({
+                ...o,
+                id: Number(o.id),
+                group_id: Number(o.group_id),
+                price_modifier: Number(o.price_modifier),
+                is_available: Number(o.is_available),
+                is_visible: Number(o.is_visible),
+                sort_order: Number(o.sort_order)
+            }))
         }))
 
         return NextResponse.json(data)
+
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 })
     }

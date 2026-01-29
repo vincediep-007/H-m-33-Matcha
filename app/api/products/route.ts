@@ -29,17 +29,26 @@ export async function GET() {
 
         const data = products.map((p: any) => ({
             ...p,
-            sizes: sizes.filter((s: any) => {
-                const match = String(s.product_id) === String(p.id);
-                return match;
-            }),
-            option_group_ids: links.filter((l: any) => String(l.product_id) === String(p.id)).map((l: any) => l.group_id),
-            recipe: recipes.filter((r: any) => String(r.product_id) === String(p.id)).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
+            id: Number(p.id),
+            category_id: Number(p.category_id),
+            is_available: Number(p.is_available),
+            is_visible: Number(p.is_visible),
+            sizes: sizes.filter((s: any) => String(s.product_id) === String(p.id)).map((s: any) => ({
+                id: Number(s.id),
+                product_id: Number(s.product_id),
+                size_name: s.size_name,
+                price: Number(s.price)
+            })),
+            option_group_ids: links.filter((l: any) => String(l.product_id) === String(p.id)).map((l: any) => Number(l.group_id)),
+            recipe: recipes.filter((r: any) => String(r.product_id) === String(p.id)).map((r: any): any => ({
+                ingredientId: Number(r.ingredient_id),
+                quantity: Number(r.quantity),
+                sizeName: r.size_name
+            }))
         }))
 
-
-
         return NextResponse.json(data)
+
 
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 })
@@ -128,12 +137,16 @@ export async function PUT(request: NextRequest) {
         }
 
         // Re-write Links
+        console.log(`API: Syncing ${optionGroupIds?.length || 0} links for product ${id}`)
         await db.run('DELETE FROM product_option_links WHERE product_id = ?', [id])
         if (optionGroupIds && Array.isArray(optionGroupIds)) {
             for (const gid of optionGroupIds) {
-                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [id, parseInt(gid) || gid])
+                const parsedGid = parseInt(gid) || gid;
+                console.log(`API: Linking product ${id} to group ${parsedGid}`)
+                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [id, parsedGid])
             }
         }
+
 
         // Re-write Recipe
         await db.run('DELETE FROM product_recipes WHERE product_id = ?', [id])
