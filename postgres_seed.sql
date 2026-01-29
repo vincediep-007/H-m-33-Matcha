@@ -80,6 +80,7 @@ CREATE TABLE product_sizes(
 CREATE TABLE product_option_links(
         product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
         group_id INTEGER REFERENCES option_groups(id) ON DELETE CASCADE,
+        sort_order INTEGER DEFAULT 0,
         PRIMARY KEY(product_id, group_id)
     );
 

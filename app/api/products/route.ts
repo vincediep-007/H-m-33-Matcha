@@ -12,7 +12,7 @@ export async function GET() {
     try {
         const products = await db.query('SELECT * FROM products ORDER BY id ASC')
         const sizes = await db.query('SELECT * FROM product_sizes ORDER BY id ASC')
-        const links = await db.query('SELECT * FROM product_option_links ORDER BY product_id ASC, group_id ASC')
+        const links = await db.query('SELECT * FROM product_option_links ORDER BY product_id ASC, sort_order ASC, group_id ASC')
         const recipes = await db.query('SELECT * FROM product_recipes ORDER BY id ASC')
 
         console.log(`API diagnostic: Products=${products.length}, Sizes=${sizes.length}, Links=${links.length}, Recipes=${recipes.length}`)
@@ -85,8 +85,9 @@ export async function POST(request: NextRequest) {
 
         // Insert Links
         if (optionGroupIds && Array.isArray(optionGroupIds)) {
-            for (const gid of optionGroupIds) {
-                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [productId, gid])
+            for (let i = 0; i < optionGroupIds.length; i++) {
+                const gid = optionGroupIds[i]
+                await db.run('INSERT INTO product_option_links (product_id, group_id, sort_order) VALUES (?, ?, ?)', [productId, gid, i])
             }
         }
 
@@ -145,10 +146,11 @@ export async function PUT(request: NextRequest) {
         console.log(`API: Syncing ${optionGroupIds?.length || 0} links for product ${id}`)
         await db.run('DELETE FROM product_option_links WHERE product_id = ?', [id])
         if (optionGroupIds && Array.isArray(optionGroupIds)) {
-            for (const gid of optionGroupIds) {
+            for (let i = 0; i < optionGroupIds.length; i++) {
+                const gid = optionGroupIds[i]
                 const parsedGid = parseInt(gid) || gid;
-                console.log(`API: Linking product ${id} to group ${parsedGid}`)
-                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [id, parsedGid])
+                console.log(`API: Linking product ${id} to group ${parsedGid} at index ${i}`)
+                await db.run('INSERT INTO product_option_links (product_id, group_id, sort_order) VALUES (?, ?, ?)', [id, parsedGid, i])
             }
         }
 
