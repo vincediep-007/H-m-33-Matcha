@@ -7,22 +7,28 @@ class DatabaseProxy implements DatabaseAdapter {
     if (dbInstance) return;
 
     const pgUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-    console.log(`Database: Initializing (Detected URL: ${pgUrl ? 'Present' : 'Missing'})`);
+    const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
+
+    console.log(`DB Init: Environment=${isVercel ? 'Vercel' : 'Local'}, URL=${pgUrl ? 'Detected' : 'Missing'}`);
 
     if (pgUrl) {
-      console.log('Database: Loading PostgresAdapter...');
+      console.log('DB Init: Loading PostgresAdapter...');
       const { PostgresAdapter } = await import('./db-postgres');
       dbInstance = new PostgresAdapter();
       if (dbInstance.ensureTables) {
-        console.log('Database: Ensuring tables exist...');
+        console.log('DB Init: Ensuring tables exist...');
         await dbInstance.ensureTables();
       }
+    } else if (isVercel) {
+      // CRITICAL: We should NEVER use SQLite on Vercel
+      throw new Error('DATABASE ERROR: Environment is Vercel but no POSTGRES_URL was found. Please check your Vercel Environment Variables.');
     } else {
-      console.log('Database: Loading SqliteAdapter (Fallback)...');
+      console.log('DB Init: Loading SqliteAdapter (Local Only)...');
       const { SqliteAdapter } = await import('./db-sqlite');
       dbInstance = new SqliteAdapter();
     }
   }
+
 
   async query<T = any>(text: string, params: any[] = []): Promise<T[]> {
     await this.ensureInitialized();
