@@ -7,25 +7,34 @@ const db = new sqlite3.Database(dbPath);
 const outputPath = path.resolve(__dirname, '../postgres_seed.sql');
 
 const tables = [
+    'settings',
     'categories',
-    'options',
     'option_groups',
+    'ingredients',
     'products',
+    'options',
     'product_sizes',
     'product_option_links',
     'product_recipes',
-    'ingredients'
-    // 'orders', 'order_items' // Skip sales data for clean deploy? Or include? Let's skip for now, usually users want menu.
+    'orders',
+    'surveys'
 ];
 
 const stream = fs.createWriteStream(outputPath);
 
-db.serialize(() => {
+function getRows(table) {
+    return new Promise((resolve, reject) => {
+        db.all(`SELECT * FROM ${table}`, [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+}
+
+async function exportData() {
     console.log("Exporting data to postgres_seed.sql...");
 
     // 1. Drop and Create Tables (Schema)
-    // We'll generate generic CREATE TABLE statements compatible with Postgres
-
     stream.write(`
 --PostgreSQL Seed File
 --Generated from SQLite
@@ -56,8 +65,6 @@ CREATE TABLE categories(
         image_url TEXT
     );
 
-
-
 CREATE TABLE option_groups(
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
@@ -66,7 +73,6 @@ CREATE TABLE option_groups(
         is_required INTEGER DEFAULT 0,
         is_visible INTEGER DEFAULT 1
     );
-
 
 CREATE TABLE options(
         id SERIAL PRIMARY KEY,
@@ -82,8 +88,6 @@ CREATE TABLE options(
         image_focus TEXT,
         crop_data TEXT
     );
-
-
 
 CREATE TABLE products(
         id SERIAL PRIMARY KEY,
@@ -102,7 +106,6 @@ CREATE TABLE ingredients(
     cost_per_gram REAL DEFAULT 0,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE TABLE product_sizes(
         id SERIAL PRIMARY KEY,
@@ -136,7 +139,6 @@ CREATE TABLE orders(
             display_id INTEGER
         );
 
-
 CREATE TABLE surveys(
             id SERIAL PRIMARY KEY,
             order_id INTEGER,
@@ -150,35 +152,34 @@ CREATE TABLE surveys(
         );
 `);
 
-
-    // 2. Export Data
-    let completed = 0;
-
-    tables.forEach(table => {
-        db.all(`SELECT * FROM ${table}`, [], (err, rows) => {
-            if (err) {
-                console.error(`Error reading ${table}:`, err);
-                return;
-            }
-
+    // 2. Export Data Sequentially
+    for (const table of tables) {
+        try {
+            const rows = await getRows(table);
             if (rows.length > 0) {
+                console.log(`Writing data for ${table} (${rows.length} rows)...`);
                 stream.write(`\n-- Data for ${table}\n`);
                 rows.forEach(row => {
                     const columns = Object.keys(row).join(', ');
                     const values = Object.values(row).map(v => {
                         if (v === null) return 'NULL';
                         if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
+                        if (typeof v === 'boolean') return v ? '1' : '0';
                         return v;
                     }).join(', ');
                     stream.write(`INSERT INTO ${table} (${columns}) VALUES (${values});\n`);
                 });
             }
+        } catch (err) {
+            console.error(`Error exporting ${table}:`, err);
+        }
+    }
 
-            completed++;
-            if (completed === tables.length) {
-                console.log("Export complete!");
-                stream.end();
-            }
-        });
-    });
+    console.log("Export complete!");
+    stream.end();
+}
+
+db.serialize(() => {
+    exportData();
 });
+
