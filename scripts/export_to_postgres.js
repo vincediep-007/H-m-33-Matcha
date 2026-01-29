@@ -23,13 +23,24 @@ const tables = [
 const stream = fs.createWriteStream(outputPath);
 
 function getRows(table) {
+    const queryMap = {
+        'products': `SELECT * FROM products WHERE category_id IN (SELECT id FROM categories)`,
+        'options': `SELECT * FROM options WHERE group_id IN (SELECT id FROM option_groups)`,
+        'product_sizes': `SELECT * FROM product_sizes WHERE product_id IN (SELECT id FROM products WHERE category_id IN (SELECT id FROM categories))`,
+        'product_option_links': `SELECT * FROM product_option_links WHERE product_id IN (SELECT id FROM products) AND group_id IN (SELECT id FROM option_groups)`,
+        'product_recipes': `SELECT * FROM product_recipes WHERE product_id IN (SELECT id FROM products)`
+    };
+
+    const query = queryMap[table] || `SELECT * FROM ${table}`;
+
     return new Promise((resolve, reject) => {
-        db.all(`SELECT * FROM ${table}`, [], (err, rows) => {
+        db.all(query, [], (err, rows) => {
             if (err) reject(err);
             else resolve(rows);
         });
     });
 }
+
 
 async function exportData() {
     console.log("Exporting data to postgres_seed.sql...");

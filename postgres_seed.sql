@@ -179,9 +179,6 @@ INSERT INTO options (id, group_id, name, description, price_modifier, is_availab
 INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (52, 9, 'Mặc Định', '', 0, 1, 1, '/uploads/IMG_1219-1769637934366-182112925.PNG', '{"L":0,"1L3":0}', 0, 'center', '{"scale":1,"x":0,"y":0}');
 INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (53, 9, 'Đổi Free', '', 0, 1, 1, '/uploads/IMG_1222-1769637940331-568021265.JPG', '{"L":0,"1L3":0}', 0, 'center', '{"scale":1,"x":0,"y":0}');
 INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (54, 9, 'Boring Oat Milk', '', 0, 1, 1, '/uploads/IMG_1223-1769637945529-95161158.PNG', '{"L":5000,"1L3":10000}', 0, 'center', '{"scale":1,"x":0,"y":0}');
-INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (55, 10, 'Fuji Test', '', 0, 0, 0, '', '{"L":5000,"1L3":10000}', 0, 'center', NULL);
-INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (56, 11, 'Fuji Test', '', 0, 0, 0, '', '{"L":5000,"1L3":10000}', 0, 'center', NULL);
-INSERT INTO options (id, group_id, name, description, price_modifier, is_available, is_visible, image_url, price_modifiers_json, sort_order, image_focus, crop_data) VALUES (57, 12, 'Fuji Test', '', 0, 0, 0, '', '{"L":5000,"1L3":10000}', 0, 'center', NULL);
 
 -- Data for product_sizes
 INSERT INTO product_sizes (id, product_id, size_name, price) VALUES (54, 20, 'M', 33000);
@@ -235,18 +232,40 @@ INSERT INTO product_sizes (id, product_id, size_name, price) VALUES (125, 23, 'L
 INSERT INTO product_sizes (id, product_id, size_name, price) VALUES (126, 23, '1L3', 65000);
 
 -- Data for product_option_links
-INSERT INTO product_option_links (product_id, group_id) VALUES (20, 7);
+INSERT INTO product_option_links (product_id, group_id) VALUES (18, 4);
+INSERT INTO product_option_links (product_id, group_id) VALUES (18, 5);
+INSERT INTO product_option_links (product_id, group_id) VALUES (18, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (18, 7);
+INSERT INTO product_option_links (product_id, group_id) VALUES (19, 4);
+INSERT INTO product_option_links (product_id, group_id) VALUES (19, 5);
+INSERT INTO product_option_links (product_id, group_id) VALUES (19, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (19, 7);
 INSERT INTO product_option_links (product_id, group_id) VALUES (20, 4);
 INSERT INTO product_option_links (product_id, group_id) VALUES (20, 5);
 INSERT INTO product_option_links (product_id, group_id) VALUES (20, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (21, 7);
+INSERT INTO product_option_links (product_id, group_id) VALUES (20, 7);
 INSERT INTO product_option_links (product_id, group_id) VALUES (21, 4);
 INSERT INTO product_option_links (product_id, group_id) VALUES (21, 5);
 INSERT INTO product_option_links (product_id, group_id) VALUES (21, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (22, 7);
+INSERT INTO product_option_links (product_id, group_id) VALUES (21, 7);
 INSERT INTO product_option_links (product_id, group_id) VALUES (22, 4);
 INSERT INTO product_option_links (product_id, group_id) VALUES (22, 5);
 INSERT INTO product_option_links (product_id, group_id) VALUES (22, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (22, 7);
+INSERT INTO product_option_links (product_id, group_id) VALUES (23, 4);
+INSERT INTO product_option_links (product_id, group_id) VALUES (23, 5);
+INSERT INTO product_option_links (product_id, group_id) VALUES (23, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (23, 8);
+INSERT INTO product_option_links (product_id, group_id) VALUES (23, 9);
+INSERT INTO product_option_links (product_id, group_id) VALUES (24, 4);
+INSERT INTO product_option_links (product_id, group_id) VALUES (24, 5);
+INSERT INTO product_option_links (product_id, group_id) VALUES (24, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (24, 8);
+INSERT INTO product_option_links (product_id, group_id) VALUES (24, 9);
+INSERT INTO product_option_links (product_id, group_id) VALUES (25, 4);
+INSERT INTO product_option_links (product_id, group_id) VALUES (25, 5);
+INSERT INTO product_option_links (product_id, group_id) VALUES (25, 6);
+INSERT INTO product_option_links (product_id, group_id) VALUES (25, 8);
 INSERT INTO product_option_links (product_id, group_id) VALUES (26, 4);
 INSERT INTO product_option_links (product_id, group_id) VALUES (26, 5);
 INSERT INTO product_option_links (product_id, group_id) VALUES (26, 6);
@@ -274,28 +293,6 @@ INSERT INTO product_option_links (product_id, group_id) VALUES (33, 6);
 INSERT INTO product_option_links (product_id, group_id) VALUES (34, 4);
 INSERT INTO product_option_links (product_id, group_id) VALUES (34, 5);
 INSERT INTO product_option_links (product_id, group_id) VALUES (34, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (25, 4);
-INSERT INTO product_option_links (product_id, group_id) VALUES (25, 5);
-INSERT INTO product_option_links (product_id, group_id) VALUES (25, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (25, 8);
-INSERT INTO product_option_links (product_id, group_id) VALUES (18, 7);
-INSERT INTO product_option_links (product_id, group_id) VALUES (18, 4);
-INSERT INTO product_option_links (product_id, group_id) VALUES (18, 5);
-INSERT INTO product_option_links (product_id, group_id) VALUES (18, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (24, 4);
-INSERT INTO product_option_links (product_id, group_id) VALUES (24, 5);
-INSERT INTO product_option_links (product_id, group_id) VALUES (24, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (24, 8);
-INSERT INTO product_option_links (product_id, group_id) VALUES (24, 9);
-INSERT INTO product_option_links (product_id, group_id) VALUES (19, 7);
-INSERT INTO product_option_links (product_id, group_id) VALUES (19, 4);
-INSERT INTO product_option_links (product_id, group_id) VALUES (19, 5);
-INSERT INTO product_option_links (product_id, group_id) VALUES (19, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (23, 8);
-INSERT INTO product_option_links (product_id, group_id) VALUES (23, 9);
-INSERT INTO product_option_links (product_id, group_id) VALUES (23, 4);
-INSERT INTO product_option_links (product_id, group_id) VALUES (23, 6);
-INSERT INTO product_option_links (product_id, group_id) VALUES (23, 5);
 
 -- Data for orders
 INSERT INTO orders (id, items, total, details, worker_id, status, created_at, display_id) VALUES (5202, '[{"id":29,"name":"Cacao Hạt Điều","price":35000,"quantity":1,"size":"L","options":[{"id":46,"name":"Syrup Earl Grey","price":0},{"id":25,"name":"Không đá (0%)","price":0},{"id":40,"name":"Tàu hủ núng nính","price":3000},{"id":41,"name":"Trân châu đen","price":5000}]}]', 43000, 'Cacao Hạt Điều (L) + 4 opts', 1, 'completed', '2025-12-25 21:10:00', 1);
