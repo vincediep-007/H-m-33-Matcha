@@ -1,17 +1,36 @@
 import { DatabaseAdapter } from './db-adapter';
-import { SqliteAdapter } from './db-sqlite';
-import { PostgresAdapter } from './db-postgres';
 
-let db: DatabaseAdapter;
+let dbInstance: DatabaseAdapter | null = null;
 
 const isPostgres = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
-if (isPostgres) {
-  console.log('Database: Initializing PostgresAdapter');
-  db = new PostgresAdapter();
-} else {
-  console.log('Database: Initializing SqliteAdapter');
-  db = new SqliteAdapter();
+class DatabaseProxy implements DatabaseAdapter {
+  async ensureInitialized() {
+    if (dbInstance) return;
+
+    if (isPostgres) {
+      console.log('Database: Loading PostgresAdapter...');
+      const { PostgresAdapter } = await import('./db-postgres');
+      dbInstance = new PostgresAdapter();
+      if (dbInstance.ensureTables) await dbInstance.ensureTables();
+    } else {
+      console.log('Database: Loading SqliteAdapter...');
+      const { SqliteAdapter } = await import('./db-sqlite');
+      dbInstance = new SqliteAdapter();
+    }
+  }
+
+  async query<T = any>(text: string, params: any[] = []): Promise<T[]> {
+    await this.ensureInitialized();
+    return dbInstance!.query<T>(text, params);
+  }
+
+  async run(text: string, params: any[] = []): Promise<{ id?: number | string }> {
+    await this.ensureInitialized();
+    return dbInstance!.run(text, params);
+  }
 }
 
+const db = new DatabaseProxy();
 export default db;
+
