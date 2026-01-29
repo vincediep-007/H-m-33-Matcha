@@ -75,11 +75,24 @@ export default function Admin() {
 
   const refreshAllSafe = (authPin = pin) => {
     const headers = { 'X-Admin-Pin': authPin }
-    fetch('/api/categories', { headers }).then(r => r.json()).then(data => setCategories(Array.isArray(data) ? data : [])).catch(() => setCategories([]))
-    fetch('/api/options', { headers }).then(r => r.json()).then(data => setGroups(Array.isArray(data) ? data : [])).catch(() => setGroups([]))
-    fetch('/api/products', { headers }).then(r => r.json()).then(data => setProducts(Array.isArray(data) ? data : [])).catch(() => setProducts([]))
-    fetch('/api/ingredients', { headers }).then(r => r.json()).then(data => setIngredients(Array.isArray(data) ? data : [])).catch(() => setIngredients([]))
+
+    // Helper to handle API responses
+    const handleResponse = (setFn: any, label: string) => (data: any) => {
+      if (data && data.error) {
+        console.error(`${label} API Error:`, data.error);
+        // alert(`${label} API Error: ${data.error}`);
+        setFn([]);
+      } else {
+        setFn(Array.isArray(data) ? data : []);
+      }
+    };
+
+    fetch('/api/categories', { headers }).then(r => r.json()).then(handleResponse(setCategories, 'Categories')).catch(() => setCategories([]))
+    fetch('/api/options', { headers }).then(r => r.json()).then(handleResponse(setGroups, 'Options')).catch(() => setGroups([]))
+    fetch('/api/products', { headers }).then(r => r.json()).then(handleResponse(setProducts, 'Products')).catch(() => setProducts([]))
+    fetch('/api/ingredients', { headers }).then(r => r.json()).then(handleResponse(setIngredients, 'Ingredients')).catch(() => setIngredients([]))
   }
+
 
   const verifyPin = async (inputPin: string) => {
     setPin(inputPin)
