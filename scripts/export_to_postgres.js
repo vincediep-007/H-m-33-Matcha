@@ -152,6 +152,8 @@ CREATE TABLE surveys(
         );
 `);
 
+
+
     // 2. Export Data Sequentially
     for (const table of tables) {
         try {
@@ -183,8 +185,22 @@ CREATE TABLE surveys(
     }
 
     console.log("Export complete!");
+
+    stream.write(`
+-- Final Sequence Resets
+SELECT setval(pg_get_serial_sequence('categories', 'id'), coalesce(max(id), 1)) FROM categories;
+SELECT setval(pg_get_serial_sequence('products', 'id'), coalesce(max(id), 1)) FROM products;
+SELECT setval(pg_get_serial_sequence('product_sizes', 'id'), coalesce(max(id), 1)) FROM product_sizes;
+SELECT setval(pg_get_serial_sequence('options', 'id'), coalesce(max(id), 1)) FROM options;
+SELECT setval(pg_get_serial_sequence('option_groups', 'id'), coalesce(max(id), 1)) FROM option_groups;
+SELECT setval(pg_get_serial_sequence('ingredients', 'id'), coalesce(max(id), 1)) FROM ingredients;
+SELECT setval(pg_get_serial_sequence('orders', 'id'), coalesce(max(id), 1)) FROM orders;
+SELECT setval(pg_get_serial_sequence('surveys', 'id'), coalesce(max(id), 1)) FROM surveys;
+`);
+
     stream.end();
 }
+
 
 db.serialize(() => {
     exportData();

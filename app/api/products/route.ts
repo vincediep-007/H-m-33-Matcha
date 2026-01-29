@@ -16,16 +16,27 @@ export async function GET() {
         const recipes = await db.query('SELECT * FROM product_recipes')
 
         console.log(`API diagnostic: Products=${products.length}, Sizes=${sizes.length}, Links=${links.length}, Recipes=${recipes.length}`)
-        if (products.length > 0) console.log('Sample Product:', JSON.stringify(products[0]))
-        if (sizes.length > 0) console.log('Sample Size:', JSON.stringify(sizes[0]))
-        if (links.length > 0) console.log('Sample Link:', JSON.stringify(links[0]))
+        if (products.length > 0) {
+            const p = products[0];
+            console.log('SAMPLE PRODUCT KEYS:', Object.keys(p).join(', '))
+            console.log('SAMPLE PRODUCT ID TYPE:', typeof p.id, 'VALUE:', p.id)
+        }
+        if (sizes.length > 0) {
+            const s = sizes[0];
+            console.log('SAMPLE SIZE KEYS:', Object.keys(s).join(', '))
+            console.log('SAMPLE SIZE PRODUCT_ID TYPE:', typeof s.product_id, 'VALUE:', s.product_id)
+        }
 
         const data = products.map((p: any) => ({
             ...p,
-            sizes: sizes.filter((s: any) => s.product_id == p.id),
-            option_group_ids: links.filter((l: any) => l.product_id == p.id).map((l: any) => l.group_id),
-            recipe: recipes.filter((r: any) => r.product_id == p.id).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
+            sizes: sizes.filter((s: any) => {
+                const match = String(s.product_id) === String(p.id);
+                return match;
+            }),
+            option_group_ids: links.filter((l: any) => String(l.product_id) === String(p.id)).map((l: any) => l.group_id),
+            recipe: recipes.filter((r: any) => String(r.product_id) === String(p.id)).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
         }))
+
 
 
         return NextResponse.json(data)
@@ -84,7 +95,8 @@ export async function PUT(request: NextRequest) {
         if (pin !== ADMIN_PIN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         const body = await request.json()
-        const { id, name, categoryId, description, imageUrl, sizes, optionGroupIds, is_available, is_visible, recipe } = body
+        const { name, categoryId, description, imageUrl, sizes, optionGroupIds, is_available, is_visible, recipe } = body
+        const id = parseInt(body.id) || body.id
 
         // Handle Toggle Updates (Partial)
         if (name === undefined) {
@@ -98,10 +110,12 @@ export async function PUT(request: NextRequest) {
             }
         }
 
+        console.log(`API: Updating product ${id}`, { sizesCount: sizes?.length })
+
         // Full Update
         await db.run(
             'UPDATE products SET name = ?, category_id = ?, description = ?, image_url = ? WHERE id = ?',
-            [name, categoryId, description || '', imageUrl || '', id]
+            [name, parseInt(categoryId) || categoryId, description || '', imageUrl || '', id]
         )
 
         // Re-write Sizes
@@ -116,12 +130,13 @@ export async function PUT(request: NextRequest) {
         await db.run('DELETE FROM product_option_links WHERE product_id = ?', [id])
         if (optionGroupIds && Array.isArray(optionGroupIds)) {
             for (const gid of optionGroupIds) {
-                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [id, gid])
+                await db.run('INSERT INTO product_option_links (product_id, group_id) VALUES (?, ?)', [id, parseInt(gid) || gid])
             }
         }
 
         // Re-write Recipe
         await db.run('DELETE FROM product_recipes WHERE product_id = ?', [id])
+
         if (recipe && Array.isArray(recipe)) {
             for (const r of recipe) {
                 await db.run('INSERT INTO product_recipes (product_id, ingredient_id, quantity, size_name) VALUES (?, ?, ?, ?)', [id, r.ingredientId, r.quantity, r.sizeName || r.size_name || null])
@@ -140,12 +155,13 @@ export async function DELETE(request: NextRequest) {
         if (pin !== ADMIN_PIN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         const body = await request.json()
-        const { id } = body
+        const id = parseInt(body.id) || body.id
 
         await db.run('DELETE FROM products WHERE id = ?', [id])
         await db.run('DELETE FROM product_sizes WHERE product_id = ?', [id])
         await db.run('DELETE FROM product_option_links WHERE product_id = ?', [id])
         await db.run('DELETE FROM product_recipes WHERE product_id = ?', [id]) // Clean up recipes too
+
 
         return NextResponse.json({ success: true })
     } catch (err: any) {
