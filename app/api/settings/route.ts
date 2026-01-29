@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '../../lib/db'
 
+export const dynamic = 'force-dynamic'
+
+
 const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
 
 export async function POST(request: NextRequest) {

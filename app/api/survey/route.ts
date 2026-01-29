@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '../../lib/db'
 
+export const dynamic = 'force-dynamic'
+
+
 export async function POST(request: NextRequest) {
   const { orderId, workerId, quality, time, manner, overall, comment } = await request.json()
   try {

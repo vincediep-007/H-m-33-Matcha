@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '../../lib/db'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+
+
 const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
 
 export async function GET() {
+    console.log('API: GET /api/categories triggered')
     try {
         const categories = await db.query('SELECT * FROM categories ORDER BY sort_order')
+        console.log(`API: Found ${categories.length} categories`)
         return NextResponse.json(categories)
     } catch (err: any) {
+        console.error('API Error /api/categories:', err)
         return NextResponse.json({ error: err.message }, { status: 500 })
     }
 }
+
 
 export async function POST(request: NextRequest) {
     try {

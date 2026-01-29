@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '../../lib/db'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+
+
 const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
 
 export async function GET() {
+    console.log('API: GET /api/products triggered')
     try {
         const products = await db.query('SELECT * FROM products')
+        console.log(`API: Found ${products.length} products`)
         const sizes = await db.query('SELECT * FROM product_sizes')
+
         const links = await db.query('SELECT * FROM product_option_links')
         const recipes = await db.query('SELECT * FROM product_recipes')
 

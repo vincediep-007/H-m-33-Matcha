@@ -23,9 +23,10 @@ export class PostgresAdapter implements DatabaseAdapter {
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT,
-            is_visible BOOLEAN DEFAULT true,
+            is_visible INTEGER DEFAULT 1,
             sort_order INTEGER DEFAULT 0
         )`;
+
 
     // Products
     await sql`CREATE TABLE IF NOT EXISTS products (
@@ -34,10 +35,11 @@ export class PostgresAdapter implements DatabaseAdapter {
             name TEXT NOT NULL,
             description TEXT,
             image_url TEXT,
-            is_available BOOLEAN DEFAULT true,
-            is_visible BOOLEAN DEFAULT true,
+            is_available INTEGER DEFAULT 1,
+            is_visible INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`;
+
 
     // Product Sizes
     await sql`CREATE TABLE IF NOT EXISTS product_sizes (
@@ -52,10 +54,11 @@ export class PostgresAdapter implements DatabaseAdapter {
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT,
-            is_multi_select BOOLEAN DEFAULT false,
-            is_required BOOLEAN DEFAULT false,
-            is_visible BOOLEAN DEFAULT true
+            is_multi_select INTEGER DEFAULT 0,
+            is_required INTEGER DEFAULT 0,
+            is_visible INTEGER DEFAULT 1
         )`;
+
 
     // Options
     await sql`CREATE TABLE IF NOT EXISTS options (
@@ -64,8 +67,17 @@ export class PostgresAdapter implements DatabaseAdapter {
             name TEXT NOT NULL,
             description TEXT,
             price_modifier INTEGER DEFAULT 0,
-            is_available BOOLEAN DEFAULT true,
-            is_visible BOOLEAN DEFAULT true
+            is_available INTEGER DEFAULT 1,
+            is_visible INTEGER DEFAULT 1
+        )`;
+
+
+    // Ingredients
+    await sql`CREATE TABLE IF NOT EXISTS ingredients (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            cost_per_gram REAL DEFAULT 0,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`;
 
     // Product Option Links

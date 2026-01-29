@@ -33,12 +33,17 @@ Your local data (menu, products, categories) is in SQLite. We need to move it to
    - This will create all the tables and insert your local products/categories into Vercel.
 
 ## Step 5: Redeploy
-1. Go back to the **Deployments** tab.
+1. Go back to the **Deployments** tab in Vercel.
 2. Click the three dots (...) on your latest deployment and select **Redeploy**.
 3. Once finished, your site is LIVE!
 
 ---
 
-### Why we did this:
-- **`app/lib/db.ts`** automatically detects `POSTGRES_URL` on Vercel and switches from SQLite to Postgres.
-- **`postgres_seed.sql`** ensures your production site starts with all your products ready.
+## Troubleshooting
+
+### "Dynamic server usage" Error
+If you see a `DYNAMIC_SERVER_USAGE` error during build, I have already added `export const dynamic = 'force-dynamic'` to all API routes. This ensures Vercel correctly handles the database connections and parameters.
+
+### No Menu Items Displayed?
+If your home page loads but the menu is empty, it means your **Vercel Postgres database is empty**.
+- **Fix**: Follow **Step 4** again. Copy everything from `postgres_seed.sql` and run it in the Vercel Postgres **Query** console. This will populate your production site with your local products and categories.

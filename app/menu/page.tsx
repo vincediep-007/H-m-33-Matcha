@@ -50,13 +50,19 @@ export default function Menu() {
       fetch('/api/products').then(r => r.json()),
       fetch('/api/options').then(r => r.json())
     ]).then(([cats, prods, grps]) => {
-      setCategories(cats.filter((c: any) => c.is_visible))
-      setProducts(prods.filter((p: any) => p.is_visible))
-      setGroups(grps.filter((g: any) => g.is_visible))
-      if (cats.length > 0) setActiveCategory(cats[0].id)
+      if (Array.isArray(cats)) setCategories(cats.filter((c: any) => c.is_visible))
+      if (Array.isArray(prods)) setProducts(prods.filter((p: any) => p.is_visible))
+      if (Array.isArray(grps)) setGroups(grps.filter((g: any) => g.is_visible))
+      if (Array.isArray(cats) && cats.length > 0) setActiveCategory(cats[0].id)
 
       const savedCart = localStorage.getItem('cart')
-      if (savedCart) setCart(JSON.parse(savedCart))
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart))
+        } catch (e) {
+          console.error("Failed to parse cart", e)
+        }
+      }
       setIsCartLoaded(true)
     })
   }, [])
