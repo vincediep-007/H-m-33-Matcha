@@ -50,7 +50,8 @@ export default function Home() {
 
             <div className="p-4 bg-white rounded-2xl shadow-lg border-2 border-matcha-200 group hover:scale-105 transition duration-500">
               <QRCodeSVG
-                value="https://hem33matcha-iiwcg75gi-vinhs-projects-74415e66.vercel.app/menu"
+                value="https://hem33matcha.vercel.app/menu"
+
 
                 size={200}
                 fgColor="#1C4532" // Matcha 900
