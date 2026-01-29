@@ -15,7 +15,10 @@ export async function GET() {
         const links = await db.query('SELECT * FROM product_option_links')
         const recipes = await db.query('SELECT * FROM product_recipes')
 
-        console.log(`API: Found ${products.length} products, ${sizes.length} sizes, ${links.length} links, ${recipes.length} recipes`)
+        console.log(`API diagnostic: Products=${products.length}, Sizes=${sizes.length}, Links=${links.length}, Recipes=${recipes.length}`)
+        if (products.length > 0) console.log('Sample Product:', JSON.stringify(products[0]))
+        if (sizes.length > 0) console.log('Sample Size:', JSON.stringify(sizes[0]))
+        if (links.length > 0) console.log('Sample Link:', JSON.stringify(links[0]))
 
         const data = products.map((p: any) => ({
             ...p,
@@ -23,6 +26,7 @@ export async function GET() {
             option_group_ids: links.filter((l: any) => l.product_id == p.id).map((l: any) => l.group_id),
             recipe: recipes.filter((r: any) => r.product_id == p.id).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
         }))
+
 
         return NextResponse.json(data)
 
