@@ -4,9 +4,13 @@ import { PostgresAdapter } from './db-postgres';
 
 let db: DatabaseAdapter;
 
-if (process.env.POSTGRES_URL) {
+const isPostgres = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+
+if (isPostgres) {
+  console.log('Database: Initializing PostgresAdapter');
   db = new PostgresAdapter();
 } else {
+  console.log('Database: Initializing SqliteAdapter');
   db = new SqliteAdapter();
 }
 
