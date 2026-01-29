@@ -57,8 +57,9 @@ export async function POST(request: NextRequest) {
 
         const prodRes = await db.run(
             'INSERT INTO products (name, category_id, description, image_url, is_available, is_visible) VALUES (?, ?, ?, ?, 1, 1)',
-            [name, categoryId, description || '', imageUrl || '']
+            [name, parseInt(categoryId) || categoryId, description || '', imageUrl || '']
         )
+
         const productId = prodRes.id
 
         // Insert Sizes

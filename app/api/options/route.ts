@@ -64,7 +64,9 @@ export async function PUT(request: NextRequest) {
         if (pin !== ADMIN_PIN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         const body = await request.json()
-        const { type, id } = body
+        const { type } = body
+        const id = parseInt(body.id) || body.id
+
 
         if (type === 'group') {
             const { is_visible, name, description, isMultiSelect, isRequired } = body
@@ -114,8 +116,12 @@ export async function DELETE(request: NextRequest) {
         const pin = request.headers.get('X-Admin-Pin')
         if (pin !== ADMIN_PIN) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-        const { id, type } = await request.json()
+        const body = await request.json()
+        const { type } = body
+        const id = parseInt(body.id) || body.id
+
         if (type === 'group') {
+
             await db.run('DELETE FROM option_groups WHERE id = ?', [id])
         } else {
             await db.run('DELETE FROM options WHERE id = ?', [id])
