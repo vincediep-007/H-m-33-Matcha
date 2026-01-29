@@ -22,7 +22,12 @@ export default function Checkout() {
   useEffect(() => {
     const savedCart = localStorage.getItem('cart')
     if (savedCart) setCart(JSON.parse(savedCart))
+
+    // Fetch Settings
+    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(e => console.error(e))
   }, [])
+
+  const [settings, setSettings] = useState<any>({})
 
   const updateCart = (newCart: CartItem[]) => {
     setCart(newCart)
@@ -188,26 +193,32 @@ export default function Checkout() {
               <div className="flex items-center gap-4">
                 <span className="text-3xl bg-white p-2 rounded-lg shadow-sm">🖥️</span>
                 <div className="text-left">
-                  <div className={`font-bold text-lg ${paymentMethod === 'kiosk' ? 'text-matcha-900' : 'text-gray-700'}`}>Pay at Kiosk / Counter</div>
-                  <div className="text-xs text-gray-500">Get an Order ID and pay later</div>
+                  <div className={`font-bold text-lg ${paymentMethod === 'kiosk' ? 'text-matcha-900' : 'text-gray-700'}`}>
+                    {(settings['enable_qr_payment'] === 'true' || settings['enable_qr_payment'] === true) ? 'Pay at Kiosk / Counter' : 'Send to Kitchen (Cash)'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {(settings['enable_qr_payment'] === 'true' || settings['enable_qr_payment'] === true) ? 'Get an Order ID and pay later' : 'Pay via Cash/POS at counter'}
+                  </div>
                 </div>
               </div>
               {paymentMethod === 'kiosk' && <div className="w-6 h-6 bg-matcha-600 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
             </button>
 
-            <button
-              onClick={() => setPaymentMethod('vietqr')}
-              className={`p-6 rounded-xl border-2 flex items-center justify-between transition group ${paymentMethod === 'vietqr' ? 'border-matcha-600 bg-matcha-50' : 'border-gray-200 bg-white'}`}
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-3xl bg-white p-2 rounded-lg shadow-sm">📱</span>
-                <div className="text-left">
-                  <div className={`font-bold text-lg ${paymentMethod === 'vietqr' ? 'text-matcha-900' : 'text-gray-700'}`}>Pay Now (App)</div>
-                  <div className="text-xs text-gray-500">Instant transfer via VietQR</div>
+            {(settings['enable_qr_payment'] === 'true' || settings['enable_qr_payment'] === true) && (
+              <button
+                onClick={() => setPaymentMethod('vietqr')}
+                className={`p-6 rounded-xl border-2 flex items-center justify-between transition group ${paymentMethod === 'vietqr' ? 'border-matcha-600 bg-matcha-50' : 'border-gray-200 bg-white'}`}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-3xl bg-white p-2 rounded-lg shadow-sm">📱</span>
+                  <div className="text-left">
+                    <div className={`font-bold text-lg ${paymentMethod === 'vietqr' ? 'text-matcha-900' : 'text-gray-700'}`}>Pay Now (App)</div>
+                    <div className="text-xs text-gray-500">Instant transfer via VietQR</div>
+                  </div>
                 </div>
-              </div>
-              {paymentMethod === 'vietqr' && <div className="w-6 h-6 bg-matcha-600 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
-            </button>
+                {paymentMethod === 'vietqr' && <div className="w-6 h-6 bg-matcha-600 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
+              </button>
+            )}
           </div>
         </div>
 

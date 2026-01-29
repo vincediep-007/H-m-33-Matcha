@@ -152,7 +152,10 @@ export default function Kitchen() {
                             .map(order => (
                                 <div key={order.id} className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col animate-slide-up border-t-4 ${order.status === 'completed' ? 'border-gray-400 opacity-70' : order.status === 'preparing' ? 'border-blue-500 shadow-xl scale-[1.01]' : 'border-green-500'}`}>
                                     <div className={`p-3 flex justify-between items-center border-b ${order.status === 'preparing' ? 'bg-blue-50' : 'bg-gray-50'}`}>
-                                        <span className="font-black text-xl text-gray-800">#{order.display_id || order.id}</span>
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-xl text-gray-800">#{order.display_id || order.id}</span>
+                                            <span className="text-xs font-bold text-green-600">{order.total.toLocaleString()} VND</span>
+                                        </div>
                                         <div className="flex flex-col items-end">
                                             <span className="text-xs text-gray-500 font-mono">{new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                             {order.status === 'preparing' && <span className="text-xs font-bold text-blue-600 animate-pulse">PREPARING</span>}
@@ -165,6 +168,7 @@ export default function Kitchen() {
                                                 <div className={`flex gap-2 font-bold text-gray-800 ${subTab === 'preparing' ? 'text-xl' : ''}`}>
                                                     <span className={`${subTab === 'preparing' ? 'bg-blue-100 text-blue-800 px-3 py-1' : 'bg-green-100 text-green-800 px-2'} rounded h-fit`}>{item.quantity}</span>
                                                     <span>{item?.product?.name || 'Unknown Item'}</span>
+                                                    {item.totalPrice && <span className="text-xs text-gray-400 font-normal self-center ml-1">({item.totalPrice.toLocaleString()})</span>}
                                                 </div>
                                                 <div className="text-sm text-gray-500 ml-8 mb-1">
                                                     Size: {item?.selectedSize?.size_name || '?'}

@@ -6,9 +6,11 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function Home() {
   const [mounted, setMounted] = React.useState(false);
+  const [settings, setSettings] = React.useState<any>({});
 
   React.useEffect(() => {
     setMounted(true);
+    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(e => console.error(e));
   }, []);
 
   return (
@@ -40,7 +42,7 @@ export default function Home() {
       </div>
 
       {/* QR Code Section */}
-      {mounted && (
+      {mounted && (settings['show_landing_qr'] === 'true' || settings['show_landing_qr'] === true) && (
         <div className="bg-white p-12 border-t border-matcha-100">
           <div className="container mx-auto flex flex-col md:flex-row items-center justify-center gap-12">
             <div className="text-center md:text-right max-w-sm">

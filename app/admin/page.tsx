@@ -61,6 +61,9 @@ export default function Admin() {
   // Calculator State
   const [calc, setCalc] = useState({ price: 0, currency: 25300, unit: 'g' }) // currency=exchange rate (1 USD = 25300 VND)
 
+  // Settings State
+  const [appSettings, setAppSettings] = useState<{ [key: string]: any }>({})
+
   useEffect(() => {
     const savedPin = localStorage.getItem('admin_pin')
     const checkPin = async (inputPin: string) => {
@@ -91,6 +94,19 @@ export default function Admin() {
     fetch('/api/options', { headers }).then(r => r.json()).then(handleResponse(setGroups, 'Options')).catch(() => setGroups([]))
     fetch('/api/products', { headers }).then(r => r.json()).then(handleResponse(setProducts, 'Products')).catch(() => setProducts([]))
     fetch('/api/ingredients', { headers }).then(r => r.json()).then(handleResponse(setIngredients, 'Ingredients')).catch(() => setIngredients([]))
+    fetch('/api/settings', { headers }).then(r => r.json()).then(setAppSettings).catch(e => console.error(e))
+  }
+
+  const toggleSetting = async (key: string, currentValue: any) => {
+    const newValue = !currentValue
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin },
+        body: JSON.stringify({ action: 'update_setting', key, value: newValue })
+      })
+      setAppSettings(prev => ({ ...prev, [key]: newValue }))
+    } catch (e) { alert('Failed to save setting') }
   }
 
 
@@ -571,6 +587,50 @@ export default function Admin() {
       {activeTab === 'kitchen' && (
         <div className="text-center p-8 text-gray-400">
           <p>Go to <a href="/kitchen" className="text-blue-500 underline">/kitchen</a> for the separate Worker Interface.</p>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="max-w-2xl">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Global Application Settings</h2>
+
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-matcha-900">Enable QR Payment (Pay Now)</h3>
+                <p className="text-sm text-gray-500">Allow customers to pay instantly via VietQR app integration.</p>
+              </div>
+              <button
+                onClick={() => toggleSetting('enable_qr_payment', appSettings['enable_qr_payment'] === 'true' || appSettings['enable_qr_payment'] === true)}
+                className={`w-14 h-8 rounded-full transition p-1 flex items-center ${appSettings['enable_qr_payment'] === 'true' || appSettings['enable_qr_payment'] === true ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}
+              >
+                <div className="w-6 h-6 bg-white rounded-full shadow-md"></div>
+              </button>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-matcha-900">Show Landing Page QR</h3>
+                <p className="text-sm text-gray-500">Display the "Scan to Order" QR code on the main landing page.</p>
+              </div>
+              <button
+                onClick={() => toggleSetting('show_landing_qr', appSettings['show_landing_qr'] === 'true' || appSettings['show_landing_qr'] === true)}
+                className={`w-14 h-8 rounded-full transition p-1 flex items-center ${appSettings['show_landing_qr'] === 'true' || appSettings['show_landing_qr'] === true ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}
+              >
+                <div className="w-6 h-6 bg-white rounded-full shadow-md"></div>
+              </button>
+            </div>
+
+            <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mt-8">
+              <h3 className="font-bold text-yellow-800 mb-2">Danger Zone</h3>
+              <p className="text-sm text-yellow-700 mb-4">Resetting data cannot be undone. Be careful.</p>
+              <div className="flex gap-4">
+                <button onClick={() => { if (confirm('Reset MENU only?')) { /* logic here */ } }} className="bg-white border border-red-200 text-red-500 px-4 py-2 rounded text-sm hover:bg-red-50">Reset Menu Data</button>
+                <button onClick={() => { if (confirm('Reset SALES History?')) { /* logic here */ } }} className="bg-white border border-red-200 text-red-500 px-4 py-2 rounded text-sm hover:bg-red-50">Reset Sales Data</button>
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
 
