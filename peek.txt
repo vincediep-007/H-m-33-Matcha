@@ -1,0 +1,92 @@
+--- categories ---
+[
+  {
+    "id": 8,
+    "name": "Matcha",
+    "description": "M: 4g - L: 5.5g - 1L3: 8g (Bột Nhật Bản)",
+    "is_visible": 1,
+    "sort_order": 0,
+    "image_url": null
+  },
+  {
+    "id": 9,
+    "name": "Matcha Cold Whisk",
+    "description": "M: 5g - L: 7g - 1L3: 10g",
+    "is_visible": 1,
+    "sort_order": 0,
+    "image_url": null
+  }
+]
+
+--- products ---
+[
+  {
+    "id": 18,
+    "category_id": 8,
+    "name": "Matcha Latte",
+    "description": "",
+    "image_url": "",
+    "is_available": 1,
+    "is_visible": 1,
+    "created_at": "2026-01-28 05:13:32"
+  },
+  {
+    "id": 19,
+    "category_id": 8,
+    "name": "Matcha Dâu/Chuối/Xoài",
+    "description": "Mix vị trái cây tươi mát",
+    "image_url": "",
+    "is_available": 1,
+    "is_visible": 1,
+    "created_at": "2026-01-28 05:13:32"
+  }
+]
+
+--- product_sizes ---
+[
+  {
+    "id": 54,
+    "product_id": 20,
+    "size_name": "M",
+    "price": 33000
+  },
+  {
+    "id": 55,
+    "product_id": 20,
+    "size_name": "L",
+    "price": 40000
+  }
+]
+
+--- options ---
+[
+  {
+    "id": 23,
+    "group_id": 5,
+    "name": "Nhiều đá (50%)",
+    "description": "",
+    "price_modifier": 0,
+    "is_available": 1,
+    "is_visible": 1,
+    "image_url": "",
+    "price_modifiers_json": "{\"L\":0,\"1L3\":0}",
+    "sort_order": 0,
+    "image_focus": "center",
+    "crop_data": null
+  },
+  {
+    "id": 24,
+    "group_id": 5,
+    "name": "Ít đá (30%)",
+    "description": "",
+    "price_modifier": 0,
+    "is_available": 1,
+    "is_visible": 1,
+    "image_url": "",
+    "price_modifiers_json": "{\"L\":0,\"1L3\":0}",
+    "sort_order": 0,
+    "image_focus": "center",
+    "crop_data": null
+  }
+]
+

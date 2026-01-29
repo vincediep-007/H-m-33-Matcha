@@ -1,0 +1,42 @@
+﻿--- categories ---
+id (INTEGER)
+name (TEXT)
+description (TEXT)
+is_visible (BOOLEAN)
+sort_order (INTEGER)
+image_url (TEXT)
+
+--- products ---
+id (INTEGER)
+category_id (INTEGER)
+name (TEXT)
+description (TEXT)
+image_url (TEXT)
+is_available (BOOLEAN)
+is_visible (BOOLEAN)
+created_at (DATETIME)
+
+--- options ---
+id (INTEGER)
+group_id (INTEGER)
+name (TEXT)
+description (TEXT)
+price_modifier (INTEGER)
+is_available (BOOLEAN)
+is_visible (BOOLEAN)
+image_url (TEXT)
+price_modifiers_json (TEXT)
+sort_order (INTEGER)
+image_focus (TEXT)
+crop_data (TEXT)
+
+--- product_sizes ---
+id (INTEGER)
+product_id (INTEGER)
+size_name (TEXT)
+price (INTEGER)
+
+--- product_option_links ---
+product_id (INTEGER)
+group_id (INTEGER)
+

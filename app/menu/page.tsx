@@ -150,8 +150,9 @@ export default function Menu() {
   }
 
   // Filter products by active category
-  const activeProducts = products.filter(p => p.category_id === activeCategory)
-  const activeCatDesc = categories.find(c => c.id === activeCategory)?.description
+  const activeProducts = products.filter(p => p.category_id == activeCategory)
+  const activeCatDesc = categories.find(c => c.id == activeCategory)?.description
+
 
   return (
     <div className="min-h-screen bg-cream-50 font-sans pb-24">
@@ -171,7 +172,8 @@ export default function Menu() {
             <button
               key={c.id}
               onClick={() => setActiveCategory(c.id)}
-              className={`whitespace-nowrap px-5 py-2 rounded-full font-bold transition-all text-sm ${activeCategory === c.id ? 'bg-matcha-600 text-white shadow-md transform scale-105' : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-100'}`}
+              className={`whitespace-nowrap px-5 py-2 rounded-full font-bold transition-all text-sm ${activeCategory == c.id ? 'bg-matcha-600 text-white shadow-md transform scale-105' : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-100'}`}
+
             >
               {c.name}
             </button>

@@ -446,8 +446,9 @@ export default function Admin() {
 
           {/* Grouped Products */}
           {categories.map(cat => {
-            const catProducts = products.filter(p => p.category_id === cat.id)
+            const catProducts = products.filter(p => p.category_id == cat.id)
             if (catProducts.length === 0) return null
+
             return (
               <div key={cat.id} className="mb-8">
                 <div className="flex items-center gap-3 mb-4 border-b pb-2">
@@ -483,11 +484,12 @@ export default function Admin() {
             )
           })}
 
-          {products.filter(p => !p.category_id || !categories.find(c => c.id === p.category_id)).length > 0 && (
+          {products.filter(p => !p.category_id || !categories.find(c => c.id == p.category_id)).length > 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-400 mb-4 border-b pb-2">Uncategorized</h2>
               <div className="space-y-4">
-                {products.filter(p => !p.category_id || !categories.find(c => c.id === p.category_id)).map(p => (
+                {products.filter(p => !p.category_id || !categories.find(c => c.id == p.category_id)).map(p => (
+
                   <div key={p.id} className="border p-4 rounded flex justify-between bg-gray-50">
                     <span>{p.name}</span>
                     <div className="flex gap-4">
