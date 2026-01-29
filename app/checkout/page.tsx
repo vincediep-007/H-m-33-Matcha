@@ -8,6 +8,7 @@ export default function Checkout() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [survey, setSurvey] = useState({ quality: 5, time: 5, manner: 5, overall: 5, comment: '' })
   const [orderId, setOrderId] = useState<number | null>(null)
+  const [displayId, setDisplayId] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'kiosk' | 'vietqr'>('kiosk')
@@ -66,6 +67,7 @@ export default function Checkout() {
 
       const data = await res.json()
       setOrderId(data.id)
+      setDisplayId(data.display_id)
 
       // Submit Survey (Fire and forget)
       fetch('/api/survey', {
@@ -125,7 +127,7 @@ export default function Checkout() {
 
         <div className="my-8 py-6 bg-matcha-50 rounded-xl border-2 border-dashed border-matcha-300">
           <p className="text-sm font-bold text-matcha-500 uppercase tracking-widest mb-2">Your Order Number</p>
-          <div className="text-7xl font-black text-matcha-800 tracking-tighter">#{orderId}</div>
+          <div className="text-7xl font-black text-matcha-800 tracking-tighter">#{displayId || orderId}</div>
         </div>
 
         {paymentMethod === 'kiosk' ? (
