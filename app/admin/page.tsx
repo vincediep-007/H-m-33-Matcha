@@ -198,9 +198,12 @@ export default function Admin() {
   const saveCategory = async () => {
     const method = editingId ? 'PUT' : 'POST'
     const body = editingId ? { id: editingId, ...catForm } : catForm
-    await fetch('/api/categories', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const res = await fetch('/api/categories', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (!res.ok) { alert(data.error || 'Failed to save category'); return; }
     setShowCatModal(false); refreshAllSafe()
   }
+
 
   // 2. Groups
   const openNewGroup = () => { setEditingId(null); setGroupForm({ name: '', description: '', isMultiSelect: false, isRequired: false }); setShowGroupModal(true) }
@@ -208,9 +211,12 @@ export default function Admin() {
   const saveGroup = async () => {
     const method = editingId ? 'PUT' : 'POST'
     const body = editingId ? { type: 'group', id: editingId, ...groupForm } : { type: 'group', ...groupForm }
-    await fetch('/api/options', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const res = await fetch('/api/options', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (!res.ok) { alert(data.error || 'Failed to save group'); return; }
     setShowGroupModal(false); refreshAllSafe()
   }
+
 
   // 3. Options
   const openNewOption = (gid: number) => { setEditingId(null); setOptionForm({ groupId: gid, name: '', description: '', priceModifier: 0, priceL: 0, price1L3: 0, imageUrl: '', imageFocus: 'center', cropData: { scale: 1, x: 0, y: 0 } }); setShowOptionModal(true) }
@@ -238,9 +244,12 @@ export default function Admin() {
       ? { type: 'option', id: editingId, ...optionForm, image_url: optionForm.imageUrl, sort_order: 0, priceModifiersJson, image_focus: optionForm.imageFocus, crop_data: JSON.stringify(optionForm.cropData) }
       : { type: 'option', ...optionForm, image_url: optionForm.imageUrl, sort_order: 0, priceModifiersJson, image_focus: optionForm.imageFocus, crop_data: JSON.stringify(optionForm.cropData) }
 
-    await fetch('/api/options', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const res = await fetch('/api/options', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (!res.ok) { alert(data.error || 'Failed to save option'); return; }
     setShowOptionModal(false); refreshAllSafe()
   }
+
 
   const moveOption = async (id: number, direction: 'up' | 'down') => {
     // Find group and option
@@ -310,12 +319,17 @@ export default function Admin() {
     const method = editingId ? 'PUT' : 'POST'
     const bodyClone = { ...prodForm } as any
     if (editingId) bodyClone.id = editingId
-    // Remap sizes for API if needed, or ensure API handles size_name
     bodyClone.sizes = prodForm.sizes.map(s => ({ name: s.size_name, price: Number(s.price) }))
 
-    await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(bodyClone) })
+    const res = await fetch('/api/products', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(bodyClone) })
+    const data = await res.json()
+    if (!res.ok) {
+      alert(data.error || 'Failed to save product');
+      return;
+    }
     setShowProdModal(false); refreshAllSafe()
   }
+
 
   // 5. Ingredients
   const openNewIng = () => { setEditingId(null); setIngForm({ name: '', costPerGram: 0 }); setCalc({ price: 0, currency: 25300, unit: 'g' }); setShowIngModal(true) }
@@ -323,9 +337,12 @@ export default function Admin() {
   const saveIngredient = async () => {
     const method = editingId ? 'PUT' : 'POST'
     const body = editingId ? { id: editingId, ...ingForm } : ingForm
-    await fetch('/api/ingredients', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const res = await fetch('/api/ingredients', { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify(body) })
+    const data = await res.json()
+    if (!res.ok) { alert(data.error || 'Failed to save ingredient'); return; }
     setShowIngModal(false); refreshAllSafe()
   }
+
   const deleteIngredient = async (id: number) => {
     if (!confirm('Delete ingredient?')) return
     await fetch('/api/ingredients', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Pin': pin }, body: JSON.stringify({ id }) })

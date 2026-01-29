@@ -253,8 +253,9 @@ export default function Menu() {
 
               {/* Options Groups */}
               {selectedProduct.option_group_ids.map(gid => {
-                const grp = groups.find(g => g.id === gid)
+                const grp = groups.find(g => String(g.id) == String(gid))
                 if (!grp) return null
+
 
                 // Check if this group has images (Grid Mode)
                 const hasImages = grp.options.some(o => o.image_url && o.image_url.length > 5)
@@ -271,7 +272,8 @@ export default function Menu() {
                       // Grid Layout for Image Options
                       <div className="grid grid-cols-2 gap-3">
                         {grp.options.filter(o => o.is_visible).map(opt => {
-                          const isSelected = !!selectedOptions.find(o => o.id === opt.id)
+                          const isSelected = !!selectedOptions.find(o => String(o.id) == String(opt.id))
+
                           let transform = {}
                           if (opt.crop_data) {
                             try {
@@ -309,7 +311,8 @@ export default function Menu() {
                       // Standard List Layout
                       <div className="space-y-2">
                         {grp.options.filter(o => o.is_visible).map(opt => {
-                          const isSelected = !!selectedOptions.find(o => o.id === opt.id)
+                          const isSelected = !!selectedOptions.find(o => String(o.id) == String(opt.id))
+
                           return (
                             <button
                               key={opt.id}
