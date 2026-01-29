@@ -12,10 +12,12 @@ export async function GET() {
         const groups = await db.query('SELECT * FROM option_groups')
         const options = await db.query('SELECT * FROM options ORDER BY sort_order ASC')
 
+        console.log(`API: Found ${groups.length} groups, ${options.length} options`)
+
         // Nest options inside groups
         const data = groups.map((g: any) => ({
             ...g,
-            options: options.filter((o: any) => o.group_id === g.id)
+            options: options.filter((o: any) => o.group_id == g.id)
         }))
 
         return NextResponse.json(data)
@@ -23,6 +25,7 @@ export async function GET() {
         return NextResponse.json({ error: err.message }, { status: 500 })
     }
 }
+
 
 export async function POST(request: NextRequest) {
     try {

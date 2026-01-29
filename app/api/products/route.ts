@@ -7,29 +7,30 @@ export const revalidate = 0
 
 
 const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
-
 export async function GET() {
     console.log('API: GET /api/products triggered')
     try {
         const products = await db.query('SELECT * FROM products')
-        console.log(`API: Found ${products.length} products`)
         const sizes = await db.query('SELECT * FROM product_sizes')
-
         const links = await db.query('SELECT * FROM product_option_links')
         const recipes = await db.query('SELECT * FROM product_recipes')
 
+        console.log(`API: Found ${products.length} products, ${sizes.length} sizes, ${links.length} links, ${recipes.length} recipes`)
+
         const data = products.map((p: any) => ({
             ...p,
-            sizes: sizes.filter((s: any) => s.product_id === p.id),
-            option_group_ids: links.filter((l: any) => l.product_id === p.id).map((l: any) => l.group_id),
-            recipe: recipes.filter((r: any) => r.product_id === p.id).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
+            sizes: sizes.filter((s: any) => s.product_id == p.id),
+            option_group_ids: links.filter((l: any) => l.product_id == p.id).map((l: any) => l.group_id),
+            recipe: recipes.filter((r: any) => r.product_id == p.id).map((r: any): any => ({ ingredientId: r.ingredient_id, quantity: r.quantity, sizeName: r.size_name }))
         }))
 
         return NextResponse.json(data)
+
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 })
     }
 }
+
 
 export async function POST(request: NextRequest) {
     try {
