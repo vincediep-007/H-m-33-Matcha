@@ -1,0 +1,89 @@
+Found 11 tables.
+
+Table: orders
+  - id (INTEGER)
+  - items (TEXT)
+  - total (INTEGER)
+  - details (TEXT)
+  - worker_id (INTEGER)
+  - status (TEXT)
+  - created_at (DATETIME)
+  - display_id (INTEGER)
+
+Table: products
+  - id (INTEGER)
+  - category_id (INTEGER)
+  - name (TEXT)
+  - description (TEXT)
+  - image_url (TEXT)
+  - is_available (BOOLEAN)
+  - is_visible (BOOLEAN)
+  - created_at (DATETIME)
+
+Table: product_sizes
+  - id (INTEGER)
+  - product_id (INTEGER)
+  - size_name (TEXT)
+  - price (INTEGER)
+
+Table: options
+  - id (INTEGER)
+  - group_id (INTEGER)
+  - name (TEXT)
+  - description (TEXT)
+  - price_modifier (INTEGER)
+  - is_available (BOOLEAN)
+  - is_visible (BOOLEAN)
+  - image_url (TEXT)
+  - price_modifiers_json (TEXT)
+  - sort_order (INTEGER)
+  - image_focus (TEXT)
+  - crop_data (TEXT)
+
+Table: product_option_links
+  - product_id (INTEGER)
+  - group_id (INTEGER)
+
+Table: surveys
+  - id (INTEGER)
+  - order_id (INTEGER)
+  - worker_id (INTEGER)
+  - quality (INTEGER)
+  - time (INTEGER)
+  - manner (INTEGER)
+  - overall (INTEGER)
+  - comment (TEXT)
+  - created_at (DATETIME)
+
+Table: ingredients
+  - id (INTEGER)
+  - name (TEXT)
+  - cost_per_gram (REAL)
+  - updated_at (DATETIME)
+
+Table: product_recipes
+  - id (INTEGER)
+  - product_id (INTEGER)
+  - ingredient_id (INTEGER)
+  - quantity (REAL)
+  - size_name (TEXT)
+
+Table: option_groups
+  - id (INTEGER)
+  - name (TEXT)
+  - description (TEXT)
+  - is_multi_select (BOOLEAN)
+  - is_required (BOOLEAN)
+  - is_visible (BOOLEAN)
+
+Table: categories
+  - id (INTEGER)
+  - name (TEXT)
+  - description (TEXT)
+  - is_visible (BOOLEAN)
+  - sort_order (INTEGER)
+  - image_url (TEXT)
+
+Table: settings
+  - key (TEXT)
+  - value (TEXT)

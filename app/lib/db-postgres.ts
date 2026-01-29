@@ -24,8 +24,10 @@ export class PostgresAdapter implements DatabaseAdapter {
             name TEXT NOT NULL,
             description TEXT,
             is_visible INTEGER DEFAULT 1,
-            sort_order INTEGER DEFAULT 0
+            sort_order INTEGER DEFAULT 0,
+            image_url TEXT
         )`;
+
 
 
     // Products
@@ -68,8 +70,14 @@ export class PostgresAdapter implements DatabaseAdapter {
             description TEXT,
             price_modifier INTEGER DEFAULT 0,
             is_available INTEGER DEFAULT 1,
-            is_visible INTEGER DEFAULT 1
+            is_visible INTEGER DEFAULT 1,
+            image_url TEXT,
+            price_modifiers_json TEXT,
+            sort_order INTEGER DEFAULT 0,
+            image_focus TEXT,
+            crop_data TEXT
         )`;
+
 
 
     // Ingredients
@@ -95,8 +103,10 @@ export class PostgresAdapter implements DatabaseAdapter {
             details TEXT,
             worker_id INTEGER,
             status TEXT DEFAULT 'pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            display_id INTEGER
         )`;
+
 
     // Surveys
     await sql`CREATE TABLE IF NOT EXISTS surveys (

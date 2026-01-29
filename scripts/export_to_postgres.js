@@ -52,8 +52,10 @@ CREATE TABLE categories(
         name TEXT NOT NULL,
         description TEXT,
         is_visible INTEGER DEFAULT 1,
-        sort_order INTEGER DEFAULT 0
+        sort_order INTEGER DEFAULT 0,
+        image_url TEXT
     );
+
 
 
 CREATE TABLE option_groups(
@@ -73,8 +75,14 @@ CREATE TABLE options(
         description TEXT,
         price_modifier INTEGER DEFAULT 0,
         is_available INTEGER DEFAULT 1,
-        is_visible INTEGER DEFAULT 1
+        is_visible INTEGER DEFAULT 1,
+        image_url TEXT,
+        price_modifiers_json TEXT,
+        sort_order INTEGER DEFAULT 0,
+        image_focus TEXT,
+        crop_data TEXT
     );
+
 
 
 CREATE TABLE products(
@@ -124,8 +132,10 @@ CREATE TABLE orders(
             details TEXT,
             worker_id INTEGER,
             status TEXT DEFAULT 'pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            display_id INTEGER
         );
+
 
 CREATE TABLE surveys(
             id SERIAL PRIMARY KEY,
