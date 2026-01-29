@@ -127,7 +127,8 @@ export default function Admin() {
 
   // Analysis Customization
   const [topN, setTopN] = useState(3)
-  const [excludedCats, setExcludedCats] = useState<number[]>([])
+  const [excludedCats, setExcludedCats] = useState<any[]>([])
+
 
   const getReport = async (tf: string, cd: any, wf: any) => {
     try {
@@ -1055,12 +1056,13 @@ export default function Admin() {
                     <div className="flex-1 border p-4 rounded-xl bg-gray-50 h-64 flex flex-col">
                       <label className="block text-xs font-bold text-gray-400 mb-2">AVAILABLE GROUPS</label>
                       <div className="overflow-y-auto flex-1 space-y-1">
-                        {groups.filter(g => !prodForm.optionGroupIds.includes(g.id)).map(g => (
+                        {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).map(g => (
                           <button key={g.id} onClick={() => setProdForm({ ...prodForm, optionGroupIds: [...prodForm.optionGroupIds, g.id] })} className="w-full text-left text-sm p-2 hover:bg-green-100 rounded border border-transparent hover:border-green-200 transition bg-white">
                             + {g.name}
                           </button>
                         ))}
-                        {groups.filter(g => !prodForm.optionGroupIds.includes(g.id)).length === 0 && <span className="text-xs text-gray-400 italic p-2">All groups selected</span>}
+                        {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).length === 0 && <span className="text-xs text-gray-400 italic p-2">All groups selected</span>}
+
                       </div>
                     </div>
 
@@ -1069,8 +1071,9 @@ export default function Admin() {
                       <label className="block text-xs font-bold text-green-700 mb-2">SELECTED GROUPS (ORDERED)</label>
                       <div className="overflow-y-auto flex-1 space-y-1">
                         {prodForm.optionGroupIds.map((gid, idx) => {
-                          const g = groups.find(gp => gp.id === gid);
+                          const g = groups.find(gp => String(gp.id) == String(gid));
                           if (!g) return null
+
                           return (
                             <div key={gid} className="flex justify-between items-center text-sm p-2 bg-green-50 rounded border border-green-100">
                               <span className="font-bold">{idx + 1}. {g.name}</span>
@@ -1091,7 +1094,8 @@ export default function Admin() {
                                   newIds[idx + 1] = temp
                                   setProdForm({ ...prodForm, optionGroupIds: newIds })
                                 }} disabled={idx === prodForm.optionGroupIds.length - 1} className="text-xs px-1 hover:bg-green-200 rounded disabled:opacity-30">▼</button>
-                                <button onClick={() => setProdForm({ ...prodForm, optionGroupIds: prodForm.optionGroupIds.filter(id => id !== gid) })} className="text-xs text-red-500 hover:bg-red-100 px-2 rounded ml-2">×</button>
+                                <button onClick={() => setProdForm({ ...prodForm, optionGroupIds: prodForm.optionGroupIds.filter(id => String(id) != String(gid)) })} className="text-xs text-red-500 hover:bg-red-100 px-2 rounded ml-2">×</button>
+
                               </div>
                             </div>
                           )

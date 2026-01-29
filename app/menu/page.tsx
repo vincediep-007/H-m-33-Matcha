@@ -132,8 +132,9 @@ export default function Menu() {
   const toggleOption = (grp: OptionGroup, opt: Option) => {
     if (!opt.is_available) return
     if (grp.is_multi_select) {
-      if (selectedOptions.find(o => o.id === opt.id)) {
-        setSelectedOptions(selectedOptions.filter(o => o.id !== opt.id))
+      if (selectedOptions.find(o => String(o.id) == String(opt.id))) {
+        setSelectedOptions(selectedOptions.filter(o => String(o.id) != String(opt.id)))
+
       } else {
         setSelectedOptions([...selectedOptions, opt])
       }

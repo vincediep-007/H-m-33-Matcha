@@ -149,16 +149,18 @@ export class PostgresAdapter implements DatabaseAdapter {
 
       let finalText = newText;
       let isInsert = /^\s*INSERT/i.test(newText);
+      const isJoinTable = /INTO\s+(product_option_links|product_recipes)/i.test(newText);
 
-      if (isInsert && !/RETURNING/i.test(newText)) {
+      if (isInsert && !/RETURNING/i.test(newText) && !isJoinTable) {
         finalText += ' RETURNING id';
       }
 
       const result = await sql.query(finalText, values);
 
-      if (isInsert && result.rows.length > 0) {
+      if (isInsert && result.rows.length > 0 && result.rows[0].id) {
         return { id: result.rows[0].id };
       }
+
 
       return {};
     } catch (err: any) {
