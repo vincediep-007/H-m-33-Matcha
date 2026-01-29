@@ -149,6 +149,12 @@ export default function Kitchen() {
                                 if (subTab === 'preparing') return o.status === 'preparing'
                                 return o.status === 'completed'
                             })
+                            .sort((a, b) => {
+                                // FIFO (Oldest First) for active orders
+                                if (subTab !== 'completed') return a.id - b.id
+                                // LIFO (Newest First) for history
+                                return b.id - a.id
+                            })
                             .map(order => (
                                 <div key={order.id} className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col animate-slide-up border-t-4 ${order.status === 'completed' ? 'border-gray-400 opacity-70' : order.status === 'preparing' ? 'border-blue-500 shadow-xl scale-[1.01]' : 'border-green-500'}`}>
                                     <div className={`p-3 flex justify-between items-center border-b ${order.status === 'preparing' ? 'bg-blue-50' : 'bg-gray-50'}`}>
