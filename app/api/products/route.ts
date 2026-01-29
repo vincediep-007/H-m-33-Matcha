@@ -10,10 +10,10 @@ const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
 export async function GET() {
     console.log('API: GET /api/products triggered')
     try {
-        const products = await db.query('SELECT * FROM products')
-        const sizes = await db.query('SELECT * FROM product_sizes')
-        const links = await db.query('SELECT * FROM product_option_links')
-        const recipes = await db.query('SELECT * FROM product_recipes')
+        const products = await db.query('SELECT * FROM products ORDER BY id ASC')
+        const sizes = await db.query('SELECT * FROM product_sizes ORDER BY id ASC')
+        const links = await db.query('SELECT * FROM product_option_links ORDER BY id ASC')
+        const recipes = await db.query('SELECT * FROM product_recipes ORDER BY id ASC')
 
         console.log(`API diagnostic: Products=${products.length}, Sizes=${sizes.length}, Links=${links.length}, Recipes=${recipes.length}`)
         if (products.length > 0) {

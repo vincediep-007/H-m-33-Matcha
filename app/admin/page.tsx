@@ -1,6 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import DonutChart from '../components/DonutChart'
+
+// Color Palette for Charts
+const CHART_COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6']
 
 type Category = { id: number, name: string, description: string, is_visible: number, sort_order: number, image_url: string }
 type OptionGroup = { id: number, name: string, description: string, is_multi_select: number, is_required: number, is_visible: number, options: Option[] }
@@ -144,6 +148,7 @@ export default function Admin() {
   // Analysis Customization
   const [topN, setTopN] = useState(3)
   const [excludedCats, setExcludedCats] = useState<any[]>([])
+  const [excludedGroups, setExcludedGroups] = useState<any[]>([])
 
 
   const getReport = async (tf: string, cd: any, wf: any) => {
@@ -740,6 +745,20 @@ export default function Admin() {
                       ))}
                     </div>
                   </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-400 mb-1">VISIBLE GROUPS</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {groups.map(g => (
+                        <label key={g.id} className={`text-xs px-2 py-1 rounded border cursor-pointer select-none transition ${!excludedGroups.includes(g.id) ? 'bg-blue-100 border-blue-300 text-blue-800 font-bold' : 'bg-gray-50 text-gray-400'}`}>
+                          <input type="checkbox" className="hidden" checked={!excludedGroups.includes(g.id)} onChange={() => {
+                            if (excludedGroups.includes(g.id)) setExcludedGroups(excludedGroups.filter(id => id !== g.id))
+                            else setExcludedGroups([...excludedGroups, g.id])
+                          }} />
+                          {g.name}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -756,7 +775,6 @@ export default function Admin() {
             </div>
           ) : (
             <>
-              {/* Key Metrics */}
               {/* Key Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded shadow-sm border-l-4 border-green-500">
@@ -830,49 +848,113 @@ export default function Admin() {
                 {/* Category Analysis */}
                 <div className="bg-white p-6 rounded shadow-sm">
                   <h3 className="font-bold mb-4 border-b pb-2 flex items-center gap-2">📂 Category Performance <span className="text-xs font-normal text-gray-500 ml-auto">Revenue Sorted</span></h3>
-                  <div className="space-y-4">
-                    {analyticsData.categoryAnalysis
-                      ?.filter((c: any) => {
-                        const catObj = categories.find(cat => cat.name === c.category)
-                        return !catObj || !excludedCats.includes(catObj.id)
-                      })
-                      .map((c: any, i: number) => (
-                        <div key={i} className="border p-3 rounded-lg flex flex-col gap-2 hover:bg-gray-50">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-lg">{c.category}</span>
-                            <span className="font-bold text-green-600">{c.revenue.toLocaleString()}</span>
+
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* 1. Chart */}
+                    <div className="shrink-0">
+                      <DonutChart
+                        data={analyticsData.categoryAnalysis
+                          .filter((c: any) => {
+                            const catObj = categories.find(cat => cat.name === c.category)
+                            return !catObj || !excludedCats.includes(catObj.id)
+                          })
+                          .map((c: any, i: number) => ({
+                            label: c.category,
+                            value: c.revenue,
+                            color: CHART_COLORS[i % CHART_COLORS.length]
+                          }))}
+                        totalLabel="Revenue"
+                        totalValue={analyticsData.categoryAnalysis
+                          .filter((c: any) => {
+                            const catObj = categories.find(cat => cat.name === c.category)
+                            return !catObj || !excludedCats.includes(catObj.id)
+                          })
+                          .reduce((acc: number, c: any) => acc + c.revenue, 0).toLocaleString()}
+                      />
+                    </div>
+
+                    {/* 2. List */}
+                    <div className="space-y-4 w-full">
+                      {analyticsData.categoryAnalysis
+                        ?.filter((c: any) => {
+                          const catObj = categories.find(cat => cat.name === c.category)
+                          return !catObj || !excludedCats.includes(catObj.id)
+                        })
+                        .map((c: any, i: number) => (
+                          <div key={i} className="border p-3 rounded-lg flex flex-col gap-2 hover:bg-gray-50">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}></div>
+                                <span className="font-bold text-lg">{c.category}</span>
+                              </div>
+                              <span className="font-bold text-green-600">{c.revenue.toLocaleString()}</span>
+                            </div>
+                            <div className="text-sm text-gray-500 flex justify-between bg-gray-100 p-2 rounded">
+                              <span>🏆 Best: <strong className="text-gray-700">{c.bestSeller?.name || 'None'}</strong></span>
+                              <span>({c.bestSeller?.qty || 0})</span>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500 flex justify-between bg-gray-100 p-2 rounded">
-                            <span>🏆 Best Seller: <strong className="text-gray-700">{c.bestSeller?.name || 'None'}</strong></span>
-                            <span>({c.bestSeller?.qty || 0})</span>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Option Group Analysis */}
                 <div className="bg-white p-6 rounded shadow-sm">
                   <h3 className="font-bold mb-4 border-b pb-2 flex items-center gap-2">🎨 Customization Trends <span className="text-xs font-normal text-gray-500 ml-auto">Usage Sorted</span></h3>
-                  <div className="space-y-4">
-                    {analyticsData.groupAnalysis?.map((g: any, i: number) => (
-                      <div key={i} className="border p-3 rounded-lg flex flex-col gap-2 hover:bg-gray-50">
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-gray-800">{g.group}</span>
-                          <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">{g.totalUsage} picks</span>
-                        </div>
-                        {g.bestOption && (
-                          <div className="text-sm flex items-center gap-2 mt-1">
-                            <span className="text-gray-400">Most Popular:</span>
-                            <span className="font-bold text-matcha-600">{g.bestOption.name}</span>
-                            <span className="text-xs text-gray-400">({g.bestOption.qty})</span>
+
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* 1. Chart */}
+                    <div className="shrink-0">
+                      <DonutChart
+                        data={analyticsData.groupAnalysis
+                          ?.filter((g: any) => {
+                            const grpObj = groups.find(grp => grp.name === g.group)
+                            return !grpObj || !excludedGroups.includes(grpObj.id)
+                          })
+                          .map((g: any, i: number) => ({
+                            label: g.group,
+                            value: g.totalUsage,
+                            color: CHART_COLORS[i % CHART_COLORS.length]
+                          }))}
+                        totalLabel="Total Picks"
+                        totalValue={analyticsData.groupAnalysis
+                          ?.filter((g: any) => {
+                            const grpObj = groups.find(grp => grp.name === g.group)
+                            return !grpObj || !excludedGroups.includes(grpObj.id)
+                          })
+                          .reduce((acc: number, g: any) => acc + g.totalUsage, 0).toLocaleString()}
+                      />
+                    </div>
+
+                    {/* 2. List */}
+                    <div className="space-y-4 w-full">
+                      {analyticsData.groupAnalysis
+                        ?.filter((g: any) => {
+                          const grpObj = groups.find(grp => grp.name === g.group)
+                          return !grpObj || !excludedGroups.includes(grpObj.id)
+                        })
+                        .map((g: any, i: number) => (
+                          <div key={i} className="border p-3 rounded-lg flex flex-col gap-2 hover:bg-gray-50">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}></div>
+                                <span className="font-bold text-gray-800">{g.group}</span>
+                              </div>
+                              <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">{g.totalUsage} picks</span>
+                            </div>
+                            {g.bestOption && (
+                              <div className="text-sm flex items-center gap-2 mt-1">
+                                <span className="text-gray-400">Most Popular:</span>
+                                <span className="font-bold text-matcha-600">{g.bestOption.name}</span>
+                                <span className="text-xs text-gray-400">({g.bestOption.qty})</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        ))}
+                    </div>
                   </div>
                 </div>
-
               </div>
 
               {/* Full Product List */}
@@ -906,450 +988,462 @@ export default function Admin() {
         </div>
       )}
 
-      {activeTab === 'settings' && (
-        <div className="bg-white p-8 rounded shadow-sm border border-gray-100">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">System Settings</h2>
-          <div className="mb-8 border-b pb-8">
-            <h3 className="font-bold text-lg mb-2">Reset Menu Data</h3>
-            <p className="text-gray-500 mb-4">Use this if the menu is corrupted or if you want to start fresh to re-seed from the script. <br /><strong>This does not delete Orders.</strong></p>
-            <button onClick={handleResetMenu} className="bg-red-100 text-red-700 px-6 py-3 rounded-lg font-bold border border-red-200 hover:bg-red-200 transition">⚠️ Reset / Clear Menu</button>
-          </div>
+      {
+        activeTab === 'settings' && (
+          <div className="bg-white p-8 rounded shadow-sm border border-gray-100">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">System Settings</h2>
+            <div className="mb-8 border-b pb-8">
+              <h3 className="font-bold text-lg mb-2">Reset Menu Data</h3>
+              <p className="text-gray-500 mb-4">Use this if the menu is corrupted or if you want to start fresh to re-seed from the script. <br /><strong>This does not delete Orders.</strong></p>
+              <button onClick={handleResetMenu} className="bg-red-100 text-red-700 px-6 py-3 rounded-lg font-bold border border-red-200 hover:bg-red-200 transition">⚠️ Reset / Clear Menu</button>
+            </div>
 
-          <div className="mb-8 border-b pb-8">
-            <h3 className="font-bold text-lg mb-2">Clear Sales History</h3>
-            <p className="text-gray-500 mb-4">Clear all orders and revenue data to start fresh. <br /><strong>Menu items will be preserved.</strong></p>
-            <button onClick={handleClearSales} className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition shadow-lg">🔥 Clear Sales Data</button>
+            <div className="mb-8 border-b pb-8">
+              <h3 className="font-bold text-lg mb-2">Clear Sales History</h3>
+              <p className="text-gray-500 mb-4">Clear all orders and revenue data to start fresh. <br /><strong>Menu items will be preserved.</strong></p>
+              <button onClick={handleClearSales} className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition shadow-lg">🔥 Clear Sales Data</button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* MODALS */}
-      {showCatModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl max-h-[90vh] overflow-y-auto">
-            <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Category</h3>
+      {
+        showCatModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl max-h-[90vh] overflow-y-auto">
+              <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Category</h3>
 
-            <label className="block text-xs font-bold text-gray-400 mb-1">NAME</label>
-            <input className="border w-full p-2 mb-4 rounded" value={catForm.name} onChange={e => setCatForm({ ...catForm, name: e.target.value })} placeholder="Category Name" />
+              <label className="block text-xs font-bold text-gray-400 mb-1">NAME</label>
+              <input className="border w-full p-2 mb-4 rounded" value={catForm.name} onChange={e => setCatForm({ ...catForm, name: e.target.value })} placeholder="Category Name" />
 
-            <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
-            <textarea className="border w-full p-2 mb-4 h-20 rounded" value={catForm.description} onChange={e => setCatForm({ ...catForm, description: e.target.value })} placeholder="Description (optional)" />
+              <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
+              <textarea className="border w-full p-2 mb-4 h-20 rounded" value={catForm.description} onChange={e => setCatForm({ ...catForm, description: e.target.value })} placeholder="Description (optional)" />
 
-            {/* Upload */}
-            <label className="block text-xs font-bold text-gray-400 mb-1">IMAGE</label>
-            <div className="mb-4">
-              {catForm.imageUrl && <img src={catForm.imageUrl} className="w-full h-32 object-cover rounded mb-2 border" />}
-              <input type="file" className="text-xs" onChange={async (e) => {
-                if (e.target.files?.[0]) {
-                  const url = await handleUpload(e.target.files[0])
-                  if (url) setCatForm({ ...catForm, imageUrl: url })
-                }
-              }} />
-              {uploading && <span className="text-xs text-blue-500 ml-2">Uploading...</span>}
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowCatModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-              <button onClick={saveCategory} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showGroupModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl">
-            <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Option Group</h3>
-            <input className="border w-full p-2 mb-4 rounded" value={groupForm.name} onChange={e => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="Group Name (e.g. Sugar Level)" />
-            <textarea className="border w-full p-2 mb-4 rounded h-16" value={groupForm.description} onChange={e => setGroupForm({ ...groupForm, description: e.target.value })} placeholder="Instruction (e.g. Choose one)" />
-            <div className="space-y-2 mb-6">
-              <label className="flex items-center gap-2"><input type="checkbox" checked={groupForm.isMultiSelect} onChange={e => setGroupForm({ ...groupForm, isMultiSelect: e.target.checked })} /> Allow Multiple Selection</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={groupForm.isRequired} onChange={e => setGroupForm({ ...groupForm, isRequired: e.target.checked })} /> Required</label>
-            </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowGroupModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-              <button onClick={saveGroup} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showOptionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl max-h-[90vh] overflow-y-auto">
-            <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Option Item</h3>
-
-            <label className="block text-xs font-bold text-gray-400 mb-1">NAME</label>
-            <input className="border w-full p-2 mb-4 rounded" value={optionForm.name} onChange={e => setOptionForm({ ...optionForm, name: e.target.value })} placeholder="Item Name (e.g. 50%)" />
-
-            <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
-            <input className="border w-full p-2 mb-4 rounded" value={optionForm.description} onChange={e => setOptionForm({ ...optionForm, description: e.target.value })} placeholder="Description (optional)" />
-
-            <div className="mb-4">
+              {/* Upload */}
               <label className="block text-xs font-bold text-gray-400 mb-1">IMAGE</label>
-              {optionForm.imageUrl && (
-                <div className="mb-2">
-                  <div className="w-full h-32 rounded border overflow-hidden bg-gray-100 relative">
-                    <img
-                      src={optionForm.imageUrl}
-                      className="w-full h-full object-cover transition-all"
-                      style={{
-                        transform: `scale(${optionForm.cropData?.scale || 1}) translate(${optionForm.cropData?.x || 0}%, ${optionForm.cropData?.y || 0}%)`,
-                        transformOrigin: 'center'
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2 mb-2">
-                <input type="file" className="text-xs flex-1" onChange={async (e) => {
+              <div className="mb-4">
+                {catForm.imageUrl && <img src={catForm.imageUrl} className="w-full h-32 object-cover rounded mb-2 border" />}
+                <input type="file" className="text-xs" onChange={async (e) => {
                   if (e.target.files?.[0]) {
                     const url = await handleUpload(e.target.files[0])
-                    if (url) setOptionForm({ ...optionForm, imageUrl: url })
+                    if (url) setCatForm({ ...catForm, imageUrl: url })
                   }
                 }} />
-                {uploading && <span className="text-xs text-blue-500 self-center">Uploading...</span>}
+                {uploading && <span className="text-xs text-blue-500 ml-2">Uploading...</span>}
               </div>
 
-              <div className="bg-gray-50 p-3 rounded border mb-2">
-                <label className="block text-xs font-bold text-gray-400 mb-2">ADVANCED CROP & ZOOM</label>
-
-                {/* Zoom */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs w-12 font-bold">Zoom: {(optionForm.cropData?.scale || 1).toFixed(1)}x</span>
-                  <input type="range" min="1" max="3" step="0.1" className="flex-1"
-                    value={optionForm.cropData?.scale || 1}
-                    onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, scale: parseFloat(e.target.value) } })}
-                  />
-                </div>
-
-                {/* Pan X */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs w-12 font-bold">Pan X: {optionForm.cropData?.x || 0}%</span>
-                  <input type="range" min="-50" max="50" step="1" className="flex-1"
-                    value={optionForm.cropData?.x || 0}
-                    onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, x: parseInt(e.target.value) } })}
-                  />
-                </div>
-
-                {/* Pan Y */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs w-12 font-bold">Pan Y: {optionForm.cropData?.y || 0}%</span>
-                  <input type="range" min="-50" max="50" step="1" className="flex-1"
-                    value={optionForm.cropData?.y || 0}
-                    onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, y: parseInt(e.target.value) } })}
-                  />
-                </div>
-
-                <button onClick={() => setOptionForm({ ...optionForm, cropData: { scale: 1, x: 0, y: 0 } })} className="text-xs text-blue-500 underline">Reset Crop</button>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowCatModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
+                <button onClick={saveCategory} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
               </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-xs font-bold text-gray-400 mb-1">PRICE MODIFIER (BASE/M) (+)</label>
-              <input type="number" className="border w-full p-2 rounded" value={optionForm.priceModifier} onChange={e => setOptionForm({ ...optionForm, priceModifier: Number(e.target.value) })} placeholder="0" />
-            </div>
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-400 mb-1">PRICE (L) (+)</label>
-                <input type="number" className="border w-full p-2 rounded" value={optionForm.priceL} onChange={e => setOptionForm({ ...optionForm, priceL: Number(e.target.value) })} placeholder="0" />
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-400 mb-1">PRICE (1L3) (+)</label>
-                <input type="number" className="border w-full p-2 rounded" value={optionForm.price1L3} onChange={e => setOptionForm({ ...optionForm, price1L3: Number(e.target.value) })} placeholder="0" />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowOptionModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-              <button onClick={saveOption} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {showProdModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-auto">
-          <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col animate-scale-in shadow-2xl">
-
-            {/* Header */}
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
-              <h3 className="font-bold text-2xl text-matcha-900">{editingId ? 'Edit' : 'New'} Product</h3>
-              <button onClick={() => setShowProdModal(false)} className="text-gray-400 hover:text-red-500 text-2xl">×</button>
+      {
+        showGroupModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl">
+              <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Option Group</h3>
+              <input className="border w-full p-2 mb-4 rounded" value={groupForm.name} onChange={e => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="Group Name (e.g. Sugar Level)" />
+              <textarea className="border w-full p-2 mb-4 rounded h-16" value={groupForm.description} onChange={e => setGroupForm({ ...groupForm, description: e.target.value })} placeholder="Instruction (e.g. Choose one)" />
+              <div className="space-y-2 mb-6">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={groupForm.isMultiSelect} onChange={e => setGroupForm({ ...groupForm, isMultiSelect: e.target.checked })} /> Allow Multiple Selection</label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={groupForm.isRequired} onChange={e => setGroupForm({ ...groupForm, isRequired: e.target.checked })} /> Required</label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowGroupModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
+                <button onClick={saveGroup} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
+              </div>
             </div>
+          </div>
+        )
+      }
 
-            {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-8">
-              <div className="flex flex-col lg:flex-row gap-8">
-                {/* Left: Product Info */}
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">PRODUCT NAME</label>
-                    <input className="border w-full p-3 rounded-lg bg-gray-50" placeholder="e.g. Matcha Latte" value={prodForm.name} onChange={e => setProdForm({ ...prodForm, name: e.target.value })} />
-                  </div>
+      {
+        showOptionModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl max-h-[90vh] overflow-y-auto">
+              <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Option Item</h3>
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">CATEGORY</label>
-                    <select className="border w-full p-3 rounded-lg bg-gray-50" value={prodForm.categoryId} onChange={e => setProdForm({ ...prodForm, categoryId: Number(e.target.value) })}>
-                      <option value={0}>Select Category</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
+              <label className="block text-xs font-bold text-gray-400 mb-1">NAME</label>
+              <input className="border w-full p-2 mb-4 rounded" value={optionForm.name} onChange={e => setOptionForm({ ...optionForm, name: e.target.value })} placeholder="Item Name (e.g. 50%)" />
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
-                    <textarea className="border w-full p-3 rounded-lg bg-gray-50 h-20" placeholder="e.g. Best seller..." value={prodForm.description} onChange={e => setProdForm({ ...prodForm, description: e.target.value })} />
-                  </div>
+              <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
+              <input className="border w-full p-2 mb-4 rounded" value={optionForm.description} onChange={e => setOptionForm({ ...optionForm, description: e.target.value })} placeholder="Description (optional)" />
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1">PRODUCT IMAGE</label>
-                    <div className="mb-4">
-                      {prodForm.imageUrl && <img src={prodForm.imageUrl} className="w-full h-40 object-cover rounded mb-2 border" />}
-                      <input type="file" className="text-xs" onChange={async (e) => {
-                        if (e.target.files?.[0]) {
-                          const url = await handleUpload(e.target.files[0])
-                          if (url) setProdForm({ ...prodForm, imageUrl: url })
-                        }
-                      }} />
-                      {uploading && <span className="text-xs text-blue-500 ml-2">Uploading...</span>}
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-400 mb-1">IMAGE</label>
+                {optionForm.imageUrl && (
+                  <div className="mb-2">
+                    <div className="w-full h-32 rounded border overflow-hidden bg-gray-100 relative">
+                      <img
+                        src={optionForm.imageUrl}
+                        className="w-full h-full object-cover transition-all"
+                        style={{
+                          transform: `scale(${optionForm.cropData?.scale || 1}) translate(${optionForm.cropData?.x || 0}%, ${optionForm.cropData?.y || 0}%)`,
+                          transformOrigin: 'center'
+                        }}
+                      />
                     </div>
                   </div>
-
-                  <div className="border p-4 rounded-xl bg-gray-50">
-                    <label className="block text-xs font-bold text-gray-400 mb-2">SIZES & PRICES</label>
-                    {prodForm.sizes.map((s, idx) => (
-                      <div key={idx} className="flex gap-2 mb-2">
-                        <input className="border p-2 rounded w-1/3 text-sm" placeholder="Size (M)" value={s.size_name} onChange={e => { const newSizes = [...prodForm.sizes]; newSizes[idx].size_name = e.target.value; setProdForm({ ...prodForm, sizes: newSizes }) }} />
-                        <input className="border p-2 rounded w-1/3 text-sm" type="number" placeholder="Price" value={s.price} onChange={e => { const newSizes = [...prodForm.sizes]; newSizes[idx].price = Number(e.target.value); setProdForm({ ...prodForm, sizes: newSizes }) }} />
-                        <button onClick={() => { const newSizes = prodForm.sizes.filter((_, i) => i !== idx); setProdForm({ ...prodForm, sizes: newSizes }) }} className="text-red-400 hover:text-red-600">×</button>
-                      </div>
-                    ))}
-                    <button onClick={() => setProdForm({ ...prodForm, sizes: [...prodForm.sizes, { size_name: '', price: 0 }] })} className="text-sm text-green-600 font-bold hover:underline">+ Add Size</button>
-                  </div>
+                )}
+                <div className="flex gap-2 mb-2">
+                  <input type="file" className="text-xs flex-1" onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await handleUpload(e.target.files[0])
+                      if (url) setOptionForm({ ...optionForm, imageUrl: url })
+                    }
+                  }} />
+                  {uploading && <span className="text-xs text-blue-500 self-center">Uploading...</span>}
                 </div>
 
-                {/* Right: Recipe & Linking */}
-                <div className="flex-1 space-y-6">
-                  <div className="flex gap-4">
-                    {/* Available Groups */}
-                    <div className="flex-1 border p-4 rounded-xl bg-gray-50 h-64 flex flex-col">
-                      <label className="block text-xs font-bold text-gray-400 mb-2">AVAILABLE GROUPS</label>
-                      <div className="overflow-y-auto flex-1 space-y-1">
-                        {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).map(g => (
-                          <button key={g.id} onClick={() => setProdForm({ ...prodForm, optionGroupIds: [...prodForm.optionGroupIds, g.id] })} className="w-full text-left text-sm p-2 hover:bg-green-100 rounded border border-transparent hover:border-green-200 transition bg-white">
-                            + {g.name}
-                          </button>
-                        ))}
-                        {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).length === 0 && <span className="text-xs text-gray-400 italic p-2">All groups selected</span>}
+                <div className="bg-gray-50 p-3 rounded border mb-2">
+                  <label className="block text-xs font-bold text-gray-400 mb-2">ADVANCED CROP & ZOOM</label>
 
+                  {/* Zoom */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs w-12 font-bold">Zoom: {(optionForm.cropData?.scale || 1).toFixed(1)}x</span>
+                    <input type="range" min="1" max="3" step="0.1" className="flex-1"
+                      value={optionForm.cropData?.scale || 1}
+                      onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, scale: parseFloat(e.target.value) } })}
+                    />
+                  </div>
+
+                  {/* Pan X */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs w-12 font-bold">Pan X: {optionForm.cropData?.x || 0}%</span>
+                    <input type="range" min="-50" max="50" step="1" className="flex-1"
+                      value={optionForm.cropData?.x || 0}
+                      onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, x: parseInt(e.target.value) } })}
+                    />
+                  </div>
+
+                  {/* Pan Y */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs w-12 font-bold">Pan Y: {optionForm.cropData?.y || 0}%</span>
+                    <input type="range" min="-50" max="50" step="1" className="flex-1"
+                      value={optionForm.cropData?.y || 0}
+                      onChange={e => setOptionForm({ ...optionForm, cropData: { ...optionForm.cropData, y: parseInt(e.target.value) } })}
+                    />
+                  </div>
+
+                  <button onClick={() => setOptionForm({ ...optionForm, cropData: { scale: 1, x: 0, y: 0 } })} className="text-xs text-blue-500 underline">Reset Crop</button>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-400 mb-1">PRICE MODIFIER (BASE/M) (+)</label>
+                <input type="number" className="border w-full p-2 rounded" value={optionForm.priceModifier} onChange={e => setOptionForm({ ...optionForm, priceModifier: Number(e.target.value) })} placeholder="0" />
+              </div>
+              <div className="flex gap-2 mb-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-400 mb-1">PRICE (L) (+)</label>
+                  <input type="number" className="border w-full p-2 rounded" value={optionForm.priceL} onChange={e => setOptionForm({ ...optionForm, priceL: Number(e.target.value) })} placeholder="0" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-gray-400 mb-1">PRICE (1L3) (+)</label>
+                  <input type="number" className="border w-full p-2 rounded" value={optionForm.price1L3} onChange={e => setOptionForm({ ...optionForm, price1L3: Number(e.target.value) })} placeholder="0" />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowOptionModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
+                <button onClick={saveOption} className="bg-matcha-600 text-white px-6 py-2 rounded font-bold hover:bg-matcha-700">Save</button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        showProdModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-auto">
+            <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col animate-scale-in shadow-2xl">
+
+              {/* Header */}
+              <div className="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <h3 className="font-bold text-2xl text-matcha-900">{editingId ? 'Edit' : 'New'} Product</h3>
+                <button onClick={() => setShowProdModal(false)} className="text-gray-400 hover:text-red-500 text-2xl">×</button>
+              </div>
+
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto p-8">
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {/* Left: Product Info */}
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1">PRODUCT NAME</label>
+                      <input className="border w-full p-3 rounded-lg bg-gray-50" placeholder="e.g. Matcha Latte" value={prodForm.name} onChange={e => setProdForm({ ...prodForm, name: e.target.value })} />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1">CATEGORY</label>
+                      <select className="border w-full p-3 rounded-lg bg-gray-50" value={prodForm.categoryId} onChange={e => setProdForm({ ...prodForm, categoryId: Number(e.target.value) })}>
+                        <option value={0}>Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1">DESCRIPTION</label>
+                      <textarea className="border w-full p-3 rounded-lg bg-gray-50 h-20" placeholder="e.g. Best seller..." value={prodForm.description} onChange={e => setProdForm({ ...prodForm, description: e.target.value })} />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1">PRODUCT IMAGE</label>
+                      <div className="mb-4">
+                        {prodForm.imageUrl && <img src={prodForm.imageUrl} className="w-full h-40 object-cover rounded mb-2 border" />}
+                        <input type="file" className="text-xs" onChange={async (e) => {
+                          if (e.target.files?.[0]) {
+                            const url = await handleUpload(e.target.files[0])
+                            if (url) setProdForm({ ...prodForm, imageUrl: url })
+                          }
+                        }} />
+                        {uploading && <span className="text-xs text-blue-500 ml-2">Uploading...</span>}
                       </div>
                     </div>
 
-                    {/* Selected Groups (Ordered) */}
-                    <div className="flex-1 border p-4 rounded-xl bg-white h-64 flex flex-col border-green-500 shadow-sm">
-                      <label className="block text-xs font-bold text-green-700 mb-2">SELECTED GROUPS (ORDERED)</label>
-                      <div className="overflow-y-auto flex-1 space-y-1">
-                        {prodForm.optionGroupIds.map((gid, idx) => {
-                          const g = groups.find(gp => String(gp.id) == String(gid));
-                          if (!g) return null
+                    <div className="border p-4 rounded-xl bg-gray-50">
+                      <label className="block text-xs font-bold text-gray-400 mb-2">SIZES & PRICES</label>
+                      {prodForm.sizes.map((s, idx) => (
+                        <div key={idx} className="flex gap-2 mb-2">
+                          <input className="border p-2 rounded w-1/3 text-sm" placeholder="Size (M)" value={s.size_name} onChange={e => { const newSizes = [...prodForm.sizes]; newSizes[idx].size_name = e.target.value; setProdForm({ ...prodForm, sizes: newSizes }) }} />
+                          <input className="border p-2 rounded w-1/3 text-sm" type="number" placeholder="Price" value={s.price} onChange={e => { const newSizes = [...prodForm.sizes]; newSizes[idx].price = Number(e.target.value); setProdForm({ ...prodForm, sizes: newSizes }) }} />
+                          <button onClick={() => { const newSizes = prodForm.sizes.filter((_, i) => i !== idx); setProdForm({ ...prodForm, sizes: newSizes }) }} className="text-red-400 hover:text-red-600">×</button>
+                        </div>
+                      ))}
+                      <button onClick={() => setProdForm({ ...prodForm, sizes: [...prodForm.sizes, { size_name: '', price: 0 }] })} className="text-sm text-green-600 font-bold hover:underline">+ Add Size</button>
+                    </div>
+                  </div>
+
+                  {/* Right: Recipe & Linking */}
+                  <div className="flex-1 space-y-6">
+                    <div className="flex gap-4">
+                      {/* Available Groups */}
+                      <div className="flex-1 border p-4 rounded-xl bg-gray-50 h-64 flex flex-col">
+                        <label className="block text-xs font-bold text-gray-400 mb-2">AVAILABLE GROUPS</label>
+                        <div className="overflow-y-auto flex-1 space-y-1">
+                          {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).map(g => (
+                            <button key={g.id} onClick={() => setProdForm({ ...prodForm, optionGroupIds: [...prodForm.optionGroupIds, g.id] })} className="w-full text-left text-sm p-2 hover:bg-green-100 rounded border border-transparent hover:border-green-200 transition bg-white">
+                              + {g.name}
+                            </button>
+                          ))}
+                          {groups.filter(g => !prodForm.optionGroupIds.find(gid => String(gid) == String(g.id))).length === 0 && <span className="text-xs text-gray-400 italic p-2">All groups selected</span>}
+
+                        </div>
+                      </div>
+
+                      {/* Selected Groups (Ordered) */}
+                      <div className="flex-1 border p-4 rounded-xl bg-white h-64 flex flex-col border-green-500 shadow-sm">
+                        <label className="block text-xs font-bold text-green-700 mb-2">SELECTED GROUPS (ORDERED)</label>
+                        <div className="overflow-y-auto flex-1 space-y-1">
+                          {prodForm.optionGroupIds.map((gid, idx) => {
+                            const g = groups.find(gp => String(gp.id) == String(gid));
+                            if (!g) return null
+
+                            return (
+                              <div key={gid} className="flex justify-between items-center text-sm p-2 bg-green-50 rounded border border-green-100">
+                                <span className="font-bold">{idx + 1}. {g.name}</span>
+                                <div className="flex gap-1">
+                                  <button onClick={() => {
+                                    if (idx === 0) return
+                                    const newIds = [...prodForm.optionGroupIds]
+                                    const temp = newIds[idx]
+                                    newIds[idx] = newIds[idx - 1]
+                                    newIds[idx - 1] = temp
+                                    setProdForm({ ...prodForm, optionGroupIds: newIds })
+                                  }} disabled={idx === 0} className="text-xs px-1 hover:bg-green-200 rounded disabled:opacity-30">▲</button>
+                                  <button onClick={() => {
+                                    if (idx === prodForm.optionGroupIds.length - 1) return
+                                    const newIds = [...prodForm.optionGroupIds]
+                                    const temp = newIds[idx]
+                                    newIds[idx] = newIds[idx + 1]
+                                    newIds[idx + 1] = temp
+                                    setProdForm({ ...prodForm, optionGroupIds: newIds })
+                                  }} disabled={idx === prodForm.optionGroupIds.length - 1} className="text-xs px-1 hover:bg-green-200 rounded disabled:opacity-30">▼</button>
+                                  <button onClick={() => setProdForm({ ...prodForm, optionGroupIds: prodForm.optionGroupIds.filter(id => String(id) != String(gid)) })} className="text-xs text-red-500 hover:bg-red-100 px-2 rounded ml-2">×</button>
+
+                                </div>
+                              </div>
+                            )
+                          })}
+                          {prodForm.optionGroupIds.length === 0 && <span className="text-xs text-gray-400 italic p-2">No groups selected</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border p-4 rounded-xl bg-blue-50 border-blue-100">
+                      <label className="block text-xs font-bold text-blue-800 mb-2 flex justify-between">
+                        <span> RECIPE & COST</span>
+                        <span className="text-xs font-normal">Base Cost Calc</span>
+                      </label>
+
+                      {/* List of Ingredients Added */}
+                      <div className="space-y-3 mb-4">
+                        {/* Find unique ingredients in the recipe array */}
+                        {Array.from(new Set(prodForm.recipe.map((r: any) => r.ingredientId))).map((ingId: any) => {
+                          const ing = ingredients.find((i: any) => i.id === ingId)
+                          if (!ing) return null
 
                           return (
-                            <div key={gid} className="flex justify-between items-center text-sm p-2 bg-green-50 rounded border border-green-100">
-                              <span className="font-bold">{idx + 1}. {g.name}</span>
-                              <div className="flex gap-1">
+                            <div key={ingId} className="bg-white p-3 rounded border shadow-sm">
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="font-bold text-gray-700">{ing.name}</div>
                                 <button onClick={() => {
-                                  if (idx === 0) return
-                                  const newIds = [...prodForm.optionGroupIds]
-                                  const temp = newIds[idx]
-                                  newIds[idx] = newIds[idx - 1]
-                                  newIds[idx - 1] = temp
-                                  setProdForm({ ...prodForm, optionGroupIds: newIds })
-                                }} disabled={idx === 0} className="text-xs px-1 hover:bg-green-200 rounded disabled:opacity-30">▲</button>
-                                <button onClick={() => {
-                                  if (idx === prodForm.optionGroupIds.length - 1) return
-                                  const newIds = [...prodForm.optionGroupIds]
-                                  const temp = newIds[idx]
-                                  newIds[idx] = newIds[idx + 1]
-                                  newIds[idx + 1] = temp
-                                  setProdForm({ ...prodForm, optionGroupIds: newIds })
-                                }} disabled={idx === prodForm.optionGroupIds.length - 1} className="text-xs px-1 hover:bg-green-200 rounded disabled:opacity-30">▼</button>
-                                <button onClick={() => setProdForm({ ...prodForm, optionGroupIds: prodForm.optionGroupIds.filter(id => String(id) != String(gid)) })} className="text-xs text-red-500 hover:bg-red-100 px-2 rounded ml-2">×</button>
+                                  const newRec = prodForm.recipe.filter((r: any) => r.ingredientId !== ingId)
+                                  setProdForm({ ...prodForm, recipe: newRec })
+                                }} className="text-red-400 text-xs hover:text-red-600">Remove Ingredient</button>
+                              </div>
 
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {prodForm.sizes.map((size: any) => {
+                                  const recItem = prodForm.recipe.find((r: any) => r.ingredientId === ingId && (r.sizeName === size.size_name || (!r.sizeName && !size.size_name)))
+                                  const qty = recItem ? recItem.quantity : 0
+                                  const cost = (qty * ing.cost_per_gram)
+
+                                  return (
+                                    <div key={size.size_name} className="flex flex-col">
+                                      <label className="text-[10px] text-gray-400 uppercase font-bold">{size.size_name || 'Base'}</label>
+                                      <div className="flex items-center gap-1">
+                                        <input
+                                          type="number"
+                                          className="border p-1 rounded w-full text-sm"
+                                          placeholder="0"
+                                          value={qty || ''}
+                                          onChange={(e) => {
+                                            const val = Number(e.target.value)
+                                            let newRec = [...prodForm.recipe]
+                                            // Remove existing entry for this size
+                                            newRec = newRec.filter((r: any) => !(r.ingredientId === ingId && r.sizeName === size.size_name))
+                                            // Add new if > 0
+                                            if (val > 0) {
+                                              newRec.push({ ingredientId: ingId, sizeName: size.size_name, quantity: val })
+                                            }
+                                            setProdForm({ ...prodForm, recipe: newRec })
+                                          }}
+                                        />
+                                        <span className="text-xs text-gray-500">g</span>
+                                      </div>
+                                      <span className="text-[10px] text-gray-400 text-right mt-1">{Math.round(cost).toLocaleString()} đ</span>
+                                    </div>
+                                  )
+                                })}
                               </div>
                             </div>
                           )
                         })}
-                        {prodForm.optionGroupIds.length === 0 && <span className="text-xs text-gray-400 italic p-2">No groups selected</span>}
+                      </div>
+
+                      {/* Add Ingredient Button */}
+                      <div className="flex gap-2">
+                        <select
+                          className="border p-2 rounded flex-1 text-sm"
+                          value={0}
+                          onChange={(e) => {
+                            const id = Number(e.target.value)
+                            if (id === 0) return
+                            // Check if already added
+                            if (prodForm.recipe.find((r: any) => r.ingredientId === id)) return
+
+                            // Add Init Entries for all sizes (0g)
+                            const newRec = [...prodForm.recipe]
+                            // Add default entry for first size
+                            const firstSize = prodForm.sizes[0]?.size_name || 'M'
+                            newRec.push({ ingredientId: id, sizeName: firstSize, quantity: 0 })
+
+                            setProdForm({ ...prodForm, recipe: newRec })
+                          }}
+                        >
+                          <option value={0}>+ Add Ingredient to Recipe</option>
+                          {ingredients.filter((i: any) => !prodForm.recipe.find((r: any) => r.ingredientId === i.id)).map((i: any) => (
+                            <option key={i.id} value={i.id}>{i.name}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="border p-4 rounded-xl bg-blue-50 border-blue-100">
-                    <label className="block text-xs font-bold text-blue-800 mb-2 flex justify-between">
-                      <span> RECIPE & COST</span>
-                      <span className="text-xs font-normal">Base Cost Calc</span>
-                    </label>
+                    {/* Summary */}
+                    <div className="border-t border-blue-200 pt-2 text-right">
+                      <div className="text-sm text-gray-600">Total Base Cost: <span className="font-bold text-gray-900">{Math.round(prodForm.recipe.reduce((total, r) => {
+                        const ing = ingredients.find(i => i.id === r.ingredientId)
+                        return total + (ing ? (ing.cost_per_gram * r.quantity) : 0)
+                      }, 0)).toLocaleString()} VND</span></div>
 
-                    {/* List of Ingredients Added */}
-                    <div className="space-y-3 mb-4">
-                      {/* Find unique ingredients in the recipe array */}
-                      {Array.from(new Set(prodForm.recipe.map((r: any) => r.ingredientId))).map((ingId: any) => {
-                        const ing = ingredients.find((i: any) => i.id === ingId)
-                        if (!ing) return null
-
-                        return (
-                          <div key={ingId} className="bg-white p-3 rounded border shadow-sm">
-                            <div className="flex justify-between items-center mb-2">
-                              <div className="font-bold text-gray-700">{ing.name}</div>
-                              <button onClick={() => {
-                                const newRec = prodForm.recipe.filter((r: any) => r.ingredientId !== ingId)
-                                setProdForm({ ...prodForm, recipe: newRec })
-                              }} className="text-red-400 text-xs hover:text-red-600">Remove Ingredient</button>
-                            </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                              {prodForm.sizes.map((size: any) => {
-                                const recItem = prodForm.recipe.find((r: any) => r.ingredientId === ingId && (r.sizeName === size.size_name || (!r.sizeName && !size.size_name)))
-                                const qty = recItem ? recItem.quantity : 0
-                                const cost = (qty * ing.cost_per_gram)
-
-                                return (
-                                  <div key={size.size_name} className="flex flex-col">
-                                    <label className="text-[10px] text-gray-400 uppercase font-bold">{size.size_name || 'Base'}</label>
-                                    <div className="flex items-center gap-1">
-                                      <input
-                                        type="number"
-                                        className="border p-1 rounded w-full text-sm"
-                                        placeholder="0"
-                                        value={qty || ''}
-                                        onChange={(e) => {
-                                          const val = Number(e.target.value)
-                                          let newRec = [...prodForm.recipe]
-                                          // Remove existing entry for this size
-                                          newRec = newRec.filter((r: any) => !(r.ingredientId === ingId && r.sizeName === size.size_name))
-                                          // Add new if > 0
-                                          if (val > 0) {
-                                            newRec.push({ ingredientId: ingId, sizeName: size.size_name, quantity: val })
-                                          }
-                                          setProdForm({ ...prodForm, recipe: newRec })
-                                        }}
-                                      />
-                                      <span className="text-xs text-gray-500">g</span>
-                                    </div>
-                                    <span className="text-[10px] text-gray-400 text-right mt-1">{Math.round(cost).toLocaleString()} đ</span>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {/* Add Ingredient Button */}
-                    <div className="flex gap-2">
-                      <select
-                        className="border p-2 rounded flex-1 text-sm"
-                        value={0}
-                        onChange={(e) => {
-                          const id = Number(e.target.value)
-                          if (id === 0) return
-                          // Check if already added
-                          if (prodForm.recipe.find((r: any) => r.ingredientId === id)) return
-
-                          // Add Init Entries for all sizes (0g)
-                          const newRec = [...prodForm.recipe]
-                          // Add default entry for first size
-                          const firstSize = prodForm.sizes[0]?.size_name || 'M'
-                          newRec.push({ ingredientId: id, sizeName: firstSize, quantity: 0 })
-
-                          setProdForm({ ...prodForm, recipe: newRec })
-                        }}
-                      >
-                        <option value={0}>+ Add Ingredient to Recipe</option>
-                        {ingredients.filter((i: any) => !prodForm.recipe.find((r: any) => r.ingredientId === i.id)).map((i: any) => (
-                          <option key={i.id} value={i.id}>{i.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Summary */}
-                  <div className="border-t border-blue-200 pt-2 text-right">
-                    <div className="text-sm text-gray-600">Total Base Cost: <span className="font-bold text-gray-900">{Math.round(prodForm.recipe.reduce((total, r) => {
-                      const ing = ingredients.find(i => i.id === r.ingredientId)
-                      return total + (ing ? (ing.cost_per_gram * r.quantity) : 0)
-                    }, 0)).toLocaleString()} VND</span></div>
-
-                    <div className="text-xs text-gray-400 mt-1">
-                      Est. Profit (Size M): <span className="font-bold text-green-600">
-                        {(prodForm.sizes[0]?.price - prodForm.recipe.reduce((total, r) => {
-                          const ing = ingredients.find(i => i.id === r.ingredientId)
-                          return total + (ing ? (ing.cost_per_gram * r.quantity) : 0)
-                        }, 0)).toLocaleString()} VND
-                      </span>
+                      <div className="text-xs text-gray-400 mt-1">
+                        Est. Profit (Size M): <span className="font-bold text-green-600">
+                          {(prodForm.sizes[0]?.price - prodForm.recipe.reduce((total, r) => {
+                            const ing = ingredients.find(i => i.id === r.ingredientId)
+                            return total + (ing ? (ing.cost_per_gram * r.quantity) : 0)
+                          }, 0)).toLocaleString()} VND
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
-              <button onClick={() => setShowProdModal(false)} className="px-6 py-3 text-gray-500 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
-              <button onClick={saveProduct} className="bg-matcha-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-matcha-700 shadow-lg">Save Product</button>
+              {/* Footer */}
+              <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
+                <button onClick={() => setShowProdModal(false)} className="px-6 py-3 text-gray-500 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
+                <button onClick={saveProduct} className="bg-matcha-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-matcha-700 shadow-lg">Save Product</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Ingredient Modal */}
-      {showIngModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl">
-            <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Ingredient</h3>
+      {
+        showIngModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white p-6 rounded w-96 animate-scale-in shadow-xl">
+              <h3 className="font-bold mb-4 text-xl">{editingId ? 'Edit' : 'New'} Ingredient</h3>
 
-            {/* Name */}
-            <div className="mb-4">
-              <label className="block text-xs font-bold text-gray-400 mb-1">INGREDIENT NAME</label>
-              <input className="border w-full p-2 rounded" placeholder="e.g. Matcha Powder Type A" value={ingForm.name} onChange={e => setIngForm({ ...ingForm, name: e.target.value })} />
-            </div>
-
-            {/* Calculator */}
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
-              <label className="block text-xs font-bold text-blue-800 mb-2">COST CALCULATOR</label>
-              <div className="flex gap-2 mb-2">
-                <input type="number" className="flex-1 border p-2 rounded text-sm" placeholder="Price" value={calc.price || ''} onChange={e => setCalc({ ...calc, price: Number(e.target.value) })} />
-                <select className="border p-2 rounded text-sm" value={calc.currency} onChange={e => setCalc({ ...calc, currency: Number(e.target.value) })}>
-                  <option value={1}>VND</option>
-                  <option value={25300}>USD ($)</option>
-                </select>
+              {/* Name */}
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-400 mb-1">INGREDIENT NAME</label>
+                <input className="border w-full p-2 rounded" placeholder="e.g. Matcha Powder Type A" value={ingForm.name} onChange={e => setIngForm({ ...ingForm, name: e.target.value })} />
               </div>
-              <div className="flex gap-2 mb-2">
-                <span className="text-xs flex items-center text-gray-500">per</span>
-                <select className="flex-1 border p-2 rounded text-sm" value={calc.unit} onChange={e => setCalc({ ...calc, unit: e.target.value })}>
-                  <option value="g">Gram (g)</option>
-                  <option value="kg">Kilogram (kg)</option>
-                  <option value="oz">Ounce (oz)</option>
-                  <option value="lb">Pound (lb)</option>
-                </select>
+
+              {/* Calculator */}
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
+                <label className="block text-xs font-bold text-blue-800 mb-2">COST CALCULATOR</label>
+                <div className="flex gap-2 mb-2">
+                  <input type="number" className="flex-1 border p-2 rounded text-sm" placeholder="Price" value={calc.price || ''} onChange={e => setCalc({ ...calc, price: Number(e.target.value) })} />
+                  <select className="border p-2 rounded text-sm" value={calc.currency} onChange={e => setCalc({ ...calc, currency: Number(e.target.value) })}>
+                    <option value={1}>VND</option>
+                    <option value={25300}>USD ($)</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <span className="text-xs flex items-center text-gray-500">per</span>
+                  <select className="flex-1 border p-2 rounded text-sm" value={calc.unit} onChange={e => setCalc({ ...calc, unit: e.target.value })}>
+                    <option value="g">Gram (g)</option>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="oz">Ounce (oz)</option>
+                    <option value="lb">Pound (lb)</option>
+                  </select>
+                </div>
+                <button onClick={applyCalculator} className="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded hover:bg-blue-700">Calculate & Set Cost</button>
               </div>
-              <button onClick={applyCalculator} className="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded hover:bg-blue-700">Calculate & Set Cost</button>
-            </div>
 
-            {/* Manual Cost */}
-            <div className="mb-6">
-              <label className="block text-xs font-bold text-gray-400 mb-1">FINAL COST PER GRAM (VND)</label>
-              <input type="number" className="border w-full p-2 rounded font-bold text-lg" value={ingForm.costPerGram} onChange={e => setIngForm({ ...ingForm, costPerGram: Number(e.target.value) })} />
-            </div>
+              {/* Manual Cost */}
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-gray-400 mb-1">FINAL COST PER GRAM (VND)</label>
+                <input type="number" className="border w-full p-2 rounded font-bold text-lg" value={ingForm.costPerGram} onChange={e => setIngForm({ ...ingForm, costPerGram: Number(e.target.value) })} />
+              </div>
 
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowIngModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-              <button onClick={saveIngredient} className="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700">Save</button>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowIngModal(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
+                <button onClick={saveIngredient} className="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700">Save</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

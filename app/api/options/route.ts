@@ -9,8 +9,8 @@ const ADMIN_PIN = process.env.ADMIN_PIN || '1234'
 // GET all groups with their options
 export async function GET() {
     try {
-        const groups = await db.query('SELECT * FROM option_groups')
-        const options = await db.query('SELECT * FROM options ORDER BY sort_order ASC')
+        const groups = await db.query('SELECT * FROM option_groups ORDER BY id ASC')
+        const options = await db.query('SELECT * FROM options ORDER BY sort_order ASC, id ASC')
 
         console.log(`API diagnostic: Groups=${groups.length}, Options=${options.length}`)
         if (groups.length > 0) console.log('Sample Group:', JSON.stringify(groups[0]))
