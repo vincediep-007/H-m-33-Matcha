@@ -16,18 +16,50 @@ export async function GET(request: NextRequest) {
     let params: any[] = []
 
     const now = new Date()
-    let days = 7
-    if (timeframe === 'month') days = 30
-    if (timeframe === 'quarter') days = 90
-    if (timeframe === 'year') days = 365
+    // Vietnam Time (UTC+7)
+    const vnNow = new Date(now.getTime() + (7 * 60 * 60 * 1000))
 
-    const filterDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
-    params.push(filterDate.toISOString().replace('T', ' ').replace('Z', ''))
+    if (timeframe === 'today') {
+      const startOfVnDay = new Date(vnNow)
+      startOfVnDay.setUTCHours(0, 0, 0, 0)
+      const endOfVnDay = new Date(vnNow)
+      endOfVnDay.setUTCHours(23, 59, 59, 999)
 
-    // Custom Date Range Override
-    if (dateFrom && dateTo) {
+      // Convert back to UTC for DB query
+      const startUtc = new Date(startOfVnDay.getTime() - (7 * 60 * 60 * 1000))
+      const endUtc = new Date(endOfVnDay.getTime() - (7 * 60 * 60 * 1000))
+
+      dateFilter = "created_at >= ? AND created_at <= ?"
+      params = [
+        startUtc.toISOString().replace('T', ' ').replace('Z', ''),
+        endUtc.toISOString().replace('T', ' ').replace('Z', '')
+      ]
+    } else if (timeframe === 'yesterday') {
+      const startOfYesterday = new Date(vnNow.getTime() - (24 * 60 * 60 * 1000))
+      startOfYesterday.setUTCHours(0, 0, 0, 0)
+      const endOfYesterday = new Date(vnNow.getTime() - (24 * 60 * 60 * 1000))
+      endOfYesterday.setUTCHours(23, 59, 59, 999)
+
+      // Convert back to UTC
+      const startUtc = new Date(startOfYesterday.getTime() - (7 * 60 * 60 * 1000))
+      const endUtc = new Date(endOfYesterday.getTime() - (7 * 60 * 60 * 1000))
+
+      dateFilter = "created_at >= ? AND created_at <= ?"
+      params = [
+        startUtc.toISOString().replace('T', ' ').replace('Z', ''),
+        endUtc.toISOString().replace('T', ' ').replace('Z', '')
+      ]
+    } else if (dateFrom && dateTo) {
       dateFilter = `created_at >= ? AND created_at <= ?`
       params = [`${dateFrom} 00:00:00`, `${dateTo} 23:59:59`]
+    } else {
+      let days = 7
+      if (timeframe === 'month') days = 30
+      if (timeframe === 'quarter') days = 90
+      if (timeframe === 'year') days = 365
+
+      const filterDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
+      params.push(filterDate.toISOString().replace('T', ' ').replace('Z', ''))
     }
 
     // 2. Fetch Metadata for Grouping (Categories, Option Groups) AND Costing (Ingredients, Recipes)
