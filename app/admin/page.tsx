@@ -466,7 +466,7 @@ export default function Admin() {
                           <button onClick={() => moveOption(o.id, 'up')} disabled={idx === 0} className="text-[10px] text-gray-400 hover:text-black disabled:opacity-0">▲</button>
                           <button onClick={() => moveOption(o.id, 'down')} disabled={idx === arr.length - 1} className="text-[10px] text-gray-400 hover:text-black disabled:opacity-0">▼</button>
                         </div>
-                        {o.image_url && <img src={o.image_url} className="w-8 h-8 rounded object-cover shadow-sm bg-gray-100" />}
+                        {o.image_url && <img src={o.image_url} alt={o.name} className="w-8 h-8 rounded object-cover shadow-sm bg-gray-100" />}
                         {o.name}
                         {!o.is_visible && <span className="text-[10px] bg-gray-200 px-1 rounded">HIDDEN</span>}
                         {!o.is_available && <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded border border-red-200">SOLD OUT</span>}
@@ -499,14 +499,14 @@ export default function Admin() {
             return (
               <div key={cat.id} className="mb-8">
                 <div className="flex items-center gap-3 mb-4 border-b pb-2">
-                  {cat.image_url && <img src={cat.image_url} className="w-8 h-8 rounded-full object-cover" />}
+                  {cat.image_url && <img src={cat.image_url} alt={cat.name} className="w-8 h-8 rounded-full object-cover" />}
                   <h2 className="text-2xl font-bold text-gray-800">{cat.name}</h2>
                 </div>
                 <div className="space-y-4">
                   {catProducts.map(p => (
                     <div key={p.id} className={`border p-4 rounded flex justify-between items-center bg-white transition ${p.is_visible ? '' : 'opacity-40 grayscale'} ${p.is_available ? '' : 'bg-red-50'}`}>
                       <div className="flex items-center gap-4">
-                        {p.image_url && <img src={p.image_url} className="w-16 h-16 rounded object-cover shadow bg-gray-100" />}
+                        {p.image_url && <img src={p.image_url} alt={p.name} className="w-16 h-16 rounded object-cover shadow bg-gray-100" />}
                         <div>
                           <h3 className="font-bold flex gap-2 items-center">
                             {p.name}
@@ -611,7 +611,7 @@ export default function Admin() {
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-lg text-matcha-900">Show Landing Page QR</h3>
-                <p className="text-sm text-gray-500">Display the "Scan to Order" QR code on the main landing page.</p>
+                <p className="text-sm text-gray-500">Display the &quot;Scan to Order&quot; QR code on the main landing page.</p>
               </div>
               <button
                 onClick={() => toggleSetting('show_landing_qr', appSettings['show_landing_qr'] === 'true' || appSettings['show_landing_qr'] === true)}

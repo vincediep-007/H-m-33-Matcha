@@ -293,7 +293,7 @@ export default function Menu() {
                             >
                               {opt.image_url ? (
                                 <div className="w-full h-24 rounded-lg bg-gray-100 mb-1 overflow-hidden relative">
-                                  <img src={opt.image_url} className="w-full h-full object-cover transition-all" alt={opt.name} style={transform} />
+                                  <img src={opt.image_url} className="w-full h-full object-cover transition-all" alt={opt.name || 'Product Option'} style={transform} />
                                 </div>
                               ) : <div className="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">🍵</div>}
 

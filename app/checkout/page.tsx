@@ -254,7 +254,7 @@ export default function Checkout() {
               <button onClick={() => setShowQrModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-black">✕</button>
               <h2 className="text-2xl font-bold text-center text-matcha-900 mb-4">Scan to Pay</h2>
               <div className="bg-white p-2 border-2 border-matcha-200 rounded-xl mb-6 shadow-inner">
-                <img src={generateVietQR()} alt="VietQR" className="w-full h-auto rounded-lg" />
+                <img src={generateVietQR()} alt="VietQR Payment Code" className="w-full h-auto rounded-lg" />
               </div>
               <div className="text-center mb-6">
                 <div className="text-3xl font-black text-matcha-700">{total.toLocaleString()} VND</div>

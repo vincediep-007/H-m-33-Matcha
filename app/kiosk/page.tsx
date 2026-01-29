@@ -81,7 +81,7 @@ export default function Kiosk() {
                     <div className="flex-1 flex flex-col items-center justify-center text-center">
                         <h3 className="text-2xl font-bold text-matcha-900 mb-6">Scan to Pay</h3>
                         <div className="p-4 bg-white rounded-3xl border-4 border-matcha-500 shadow-xl mb-6">
-                            <img src={generateKioskQR(order.total, order.id)} className="w-[300px] h-[300px] object-contain" />
+                            <img src={generateKioskQR(order.total, order.id)} alt="Order Payment QR" className="w-[300px] h-[300px] object-contain" />
                         </div>
                         <p className="text-earth-500 text-lg">Accepting standard Banking Apps & Momo</p>
                     </div>
