@@ -12,7 +12,7 @@ export async function GET() {
     try {
         const products = await db.query('SELECT * FROM products ORDER BY id ASC')
         const sizes = await db.query('SELECT * FROM product_sizes ORDER BY id ASC')
-        const links = await db.query('SELECT * FROM product_option_links ORDER BY id ASC')
+        const links = await db.query('SELECT * FROM product_option_links ORDER BY product_id ASC, group_id ASC')
         const recipes = await db.query('SELECT * FROM product_recipes ORDER BY id ASC')
 
         console.log(`API diagnostic: Products=${products.length}, Sizes=${sizes.length}, Links=${links.length}, Recipes=${recipes.length}`)
