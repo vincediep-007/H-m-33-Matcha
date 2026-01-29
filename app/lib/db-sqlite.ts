@@ -24,8 +24,10 @@ export class SqliteAdapter implements DatabaseAdapter {
           name TEXT NOT NULL,
           description TEXT,
           is_visible BOOLEAN DEFAULT 1,
-          sort_order INTEGER DEFAULT 0
+          sort_order INTEGER DEFAULT 0,
+          image_url TEXT
         )`);
+
 
       db.run(`CREATE TABLE IF NOT EXISTS products (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,8 +66,14 @@ export class SqliteAdapter implements DatabaseAdapter {
           price_modifier INTEGER DEFAULT 0,
           is_available BOOLEAN DEFAULT 1, -- In Stock / Out of Stock
           is_visible BOOLEAN DEFAULT 1,   -- Show / Hide
+          image_url TEXT,
+          price_modifiers_json TEXT,
+          sort_order INTEGER DEFAULT 0,
+          image_focus TEXT,
+          crop_data TEXT,
           FOREIGN KEY(group_id) REFERENCES option_groups(id) ON DELETE CASCADE
         )`);
+
 
       db.run(`CREATE TABLE IF NOT EXISTS product_option_links (
           product_id INTEGER NOT NULL,
@@ -82,8 +90,10 @@ export class SqliteAdapter implements DatabaseAdapter {
           details TEXT,
           worker_id INTEGER,
           status TEXT DEFAULT 'pending',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          display_id INTEGER
         )`);
+
 
       db.run(`CREATE TABLE IF NOT EXISTS surveys (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
