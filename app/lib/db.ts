@@ -2,19 +2,23 @@ import { DatabaseAdapter } from './db-adapter';
 
 let dbInstance: DatabaseAdapter | null = null;
 
-const isPostgres = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-
 class DatabaseProxy implements DatabaseAdapter {
   async ensureInitialized() {
     if (dbInstance) return;
 
-    if (isPostgres) {
+    const pgUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+    console.log(`Database: Initializing (Detected URL: ${pgUrl ? 'Present' : 'Missing'})`);
+
+    if (pgUrl) {
       console.log('Database: Loading PostgresAdapter...');
       const { PostgresAdapter } = await import('./db-postgres');
       dbInstance = new PostgresAdapter();
-      if (dbInstance.ensureTables) await dbInstance.ensureTables();
+      if (dbInstance.ensureTables) {
+        console.log('Database: Ensuring tables exist...');
+        await dbInstance.ensureTables();
+      }
     } else {
-      console.log('Database: Loading SqliteAdapter...');
+      console.log('Database: Loading SqliteAdapter (Fallback)...');
       const { SqliteAdapter } = await import('./db-sqlite');
       dbInstance = new SqliteAdapter();
     }
@@ -30,6 +34,7 @@ class DatabaseProxy implements DatabaseAdapter {
     return dbInstance!.run(text, params);
   }
 }
+
 
 const db = new DatabaseProxy();
 export default db;
