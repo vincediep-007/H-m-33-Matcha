@@ -163,7 +163,14 @@ CREATE TABLE surveys(
                     const columns = Object.keys(row).join(', ');
                     const values = Object.values(row).map(v => {
                         if (v === null) return 'NULL';
-                        if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
+                        if (typeof v === 'string') {
+                            // Fix date format: "2026-01-28, 05:13:33" -> "2026-01-28 05:13:33"
+                            let cleaned = v;
+                            if (v.match(/^\d{4}-\d{2}-\d{2}, \d{2}:\d{2}:\d{2}$/)) {
+                                cleaned = v.replace(', ', ' ');
+                            }
+                            return `'${cleaned.replace(/'/g, "''")}'`;
+                        }
                         if (typeof v === 'boolean') return v ? '1' : '0';
                         return v;
                     }).join(', ');
@@ -182,4 +189,3 @@ CREATE TABLE surveys(
 db.serialize(() => {
     exportData();
 });
-
